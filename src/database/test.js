@@ -1,0 +1,3 @@
+
+{code: "validation_failed", message: "Password recovery requires an email"}                 //email пусто   
+{code: "validation_failed", message: "Unable to validate email address: invalid format"}    //email без @gmail....

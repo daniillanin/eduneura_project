@@ -1,0 +1,89 @@
+.editor-content {
+  margin-top: 20px;
+  overflow: scroll;
+  max-height: 80vh;
+}
+.wrapper {
+  margin-right: 5px;
+  border: 1px solid grey;
+  border-radius: 5px;
+  padding: 2px
+}
+.wrapper-editor-button {
+  display: flex;
+  justify-content: center;
+  button {
+    margin: 0 2px;
+    padding: 1px 3px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background-color: rgb(255 255 255);
+    cursor: pointer;
+    &:hover {
+      background-color: rgb(236, 236, 236);
+    }
+    img {
+      // убирает лишний зазор снизу у IMG
+      display: block;
+      // устанавливает цвет SVG иконки (для конвертации использовать https://angel-rs.github.io/css-color-filter-generator)
+      filter: brightness(0) saturate(100%) invert(56%) sepia(9%) saturate(8%) hue-rotate(352deg) brightness(88%) contrast(85%);
+    }
+  }
+}
+.is-active {
+  background-color: rgb(197 197 197) !important;
+}
+.tiptap {
+  p {
+    color: black;
+    // заставляет подчиняться IMG выравниванию параграфов
+    div[style*="float"] {
+      float: none !important;
+    }
+    // убирает контейнер который отображает дефолтные кнопки выравнивания на изображении
+    div[data-resize-image-ui="position-controller"] {
+      visibility: hidden;
+    }
+  }
+  table {
+    border-collapse: collapse;
+    margin: 0;
+    overflow: hidden;
+    table-layout: fixed;
+    width: 100%;
+    td, th {
+      border: 1px solid grey;
+      box-sizing: border-box;
+      min-width: 1em;
+      padding: 0 5px;
+      position: relative;
+      vertical-align: top;
+    } p {
+      margin: 5px 0;
+    }
+    th {
+      background-color: lightgrey;
+      font-weight: bold;
+      text-align: left;
+    }
+    .selectedCell:after {
+      background: rgb(238, 238, 238);
+      content: '';
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: 2;
+    }
+  }
+  .tableWrapper {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  &.resize-cursor {
+    cursor: ew-resize;
+    cursor: col-resize;
+  }
+}

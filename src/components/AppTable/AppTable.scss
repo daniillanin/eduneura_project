@@ -1,0 +1,39 @@
+.wrapper-table {
+    display: flex;
+    flex-flow: column nowrap;
+}
+.wrapper-edit-button {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    div {
+        width: 120px;
+        margin-right: auto;
+    }
+    button:nth-last-child(3) {
+        margin-right: auto;
+    }
+}
+.wrapper-edit-column-button {
+    display: flex;
+    margin-left: auto;
+    order: 1;
+}
+.p-inputtext {
+    width: 100%;
+}
+.wrapper-radio{
+    display: flex;
+    flex-flow: column nowrap;
+    label {
+        display: flex;
+        flex-flow: row-reverse nowrap;
+        justify-content: left;
+        span {
+            margin: auto 0;
+        }
+        .radio {
+            margin: 5px;
+        }
+    }
+}

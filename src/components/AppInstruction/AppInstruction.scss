@@ -1,0 +1,12 @@
+.wrapper-edit-button {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: right;
+    div {
+        width: 120px;
+        margin-right: auto;
+    }
+    button:nth-last-child(3) {
+        margin-right: auto;
+    }
+}

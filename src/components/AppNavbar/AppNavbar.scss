@@ -1,0 +1,43 @@
+.p-menubar {
+    margin-bottom: 20px;
+    justify-content: center;
+    border: none !important;
+}
+.p-menubar-start {
+    margin-right: auto;
+}
+.p-menubar-end {
+    button {
+        display: flex;
+        flex-flow: row nowrap;
+        background-color: transparent;
+        border: none;
+        .wrapper-text-avatar {
+            margin-left: 10px;
+            display: flex;
+            flex-flow: column nowrap;
+            align-items: start;
+            span:first-child {
+                font-weight: bold;
+            }
+        }
+    }
+}
+.p-inputtext {
+    width: 100%;
+}
+.wrapper-radio{
+    display: flex;
+    flex-flow: column nowrap;
+    label {
+        display: flex;
+        flex-flow: row-reverse nowrap;
+        justify-content: left;
+        span {
+            margin: auto 0;
+        }
+        .radio {
+            margin: 5px;
+        }
+    }
+}
