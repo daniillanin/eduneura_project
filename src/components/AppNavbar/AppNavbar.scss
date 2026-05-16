@@ -26,7 +26,7 @@
 .p-inputtext {
     width: 100%;
 }
-.wrapper-radio{
+.wrapper-radio {
     display: flex;
     flex-flow: column nowrap;
     label {
@@ -41,3 +41,21 @@
         }
     }
 }
+.wrapper-dialog-avatar{
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    input {
+        display: none;
+    }
+    img {
+        width: 100px;
+        height: 100px;
+        object-position: center;
+        object-fit: cover;
+        border-radius: 50%;
+        &:hover {
+            cursor: pointer;
+        } 
+    }  
+} 

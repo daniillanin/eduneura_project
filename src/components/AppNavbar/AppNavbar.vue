@@ -1,4 +1,28 @@
 <template>
+  <!-- редактирование профиля -->
+  <Dialog :visible="visibleEditProfile" modal :closable="false" :style="{ width: '25rem' }" header="Профиль">
+    <template #default>
+      <div class="wrapper-dialog">
+        <div class="wrapper-dialog-avatar">
+          <!-- <p>Аватар</p> -->
+          <img :src="currentUserData?.avatar" @click="inputElem?.click">
+          <input ref="inputElem" type="file" accept="image/jpg"></input>
+        </div>
+        <p>Имя</p>
+        <InputText v-model="currentUserFirstName"/>
+        <p>Фамилия</p>
+        <InputText v-model="currentUserLastName"/>
+        <!-- <p>Новый email</p>
+        <InputText v-model="currentUserEmail"/>
+        <p>Новый пароль</p>
+        <InputText v-model="currentUserNewPassword"/> -->
+      </div>
+    </template>
+    <template #footer>
+      <Button severity="secondary" label="Отменить" @click="resolvePromise?.('Отменить')"></Button>
+      <Button label="Сохранить" @click="resolvePromise?.('Сохранить')"></Button>
+    </template>
+  </Dialog>
   <!-- создание таблицы -->
   <Dialog :visible="visibleCreateTable" modal :closable="false" :style="{ width: '25rem' }" header="Таблица">
         <template #default>
@@ -65,9 +89,10 @@
     </template>
     <template #end>
         <button @click="visible = !visible">
-            <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle" size="normal"/>
+            <Avatar :image="currentUserData?.avatar" shape="circle" size="normal"
+            :pt="{ image: { style: 'object-position: center; object-fit: cover' } }"/>
             <div class="wrapper-text-avatar">
-                <span>{{ currentUserData?.first_name + " " + currentUserData?.last_name }}</span>
+                <span>{{ currentUserFirstName + " " + currentUserLastName }}</span>
                 <span>{{ showUserRole() }}</span>
             </div>
         </button>
@@ -75,9 +100,10 @@
   </Menubar>
   <Drawer :visible="visible" @update:visible="visible = !visible" position="right">
     <template #header>
-      <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle" size="large"/>
+      <Avatar :image="currentUserData?.avatar" shape="circle" size="large"
+      :pt="{ image: { style: 'object-position: center; object-fit: cover' } }"/>
             <div class="wrapper-text-avatar">
-                <span style="font-weight: bold">{{ currentUserData?.first_name + " " + currentUserData?.last_name }}</span>
+                <span style="font-weight: bold">{{ currentUserFirstName + " " + currentUserLastName }}</span>
                 <br>
                 <span>{{ showUserRole() }}</span>
             </div>
@@ -85,12 +111,13 @@
     <PanelMenu :model="itemsPanelBar"/>
     <template #footer>
       <Button label="Выйти" icon="pi pi-sign-out" class="flex-auto" severity="danger" text @click="signOut"></Button>
+      <Button label="Профиль" icon="pi pi-cog" class="flex-auto" severity="secondary" text @click="editProfile"></Button>
     </template>
   </Drawer>
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount ,ref } from "vue"
+import { onBeforeMount ,ref, nextTick } from "vue"
 import { useRoute, useRouter } from 'vue-router'
 import { useMainStore } from "@/stores/mainStore"
 import { supabase } from "@/database/supabase"
@@ -109,6 +136,7 @@ const visible = ref(false)
 const visibleCreateTable = ref(false)
 const visibleCreateInstruction = ref(false)
 const visibleCreateSchedule = ref(false)
+const visibleEditProfile = ref(false)
 const instructionName = ref("")
 const instructionCategory = ref("")
 const scheduleName = ref("")
@@ -116,7 +144,12 @@ const scheduleCategory = ref("")
 const tableName = ref("")
 const tableCategory = ref("")
 const currentUserData = ref<User>()
+const currentUserEmail = ref("")
+const currentUserFirstName = ref("")
+const currentUserLastName = ref("")
+const currentUserNewPassword = ref("")
 const resolvePromise = ref<(value: string) => void>()
+const inputElem = ref<HTMLInputElement>()
 
 const itemsMenuBar = ref<MenuBar[]>([
   {
@@ -194,11 +227,11 @@ const itemsPanelBar = ref<PanelBar[]>([
         icon: 'pi pi-plus',
         command: clickItemPanelBar
       },
-      {
-        label: 'Изменить маркеры',
-        icon: 'pi pi-circle',
-        command: clickItemPanelBar
-      }
+      // {
+      //   label: 'Изменить маркеры',
+      //   icon: 'pi pi-circle',
+      //   command: clickItemPanelBar
+      // }
     ]
   },
 ])
@@ -291,15 +324,43 @@ function showUserRole(): string | undefined {
       break;
     }
 }
+async function editProfile(): Promise<void> {
+  visibleEditProfile.value = true
+  await nextTick()
+  let response = await new Promise<string>((resolve) => {
+    resolvePromise.value = resolve
+  })
+  if (response == "Сохранить") {
+    if (inputElem.value?.files?.[0] && currentUserData.value) {
+      let file = inputElem.value.files[0]
+      let id = new Date().getTime()
+      await supabase.storage.from("eduneura-bucket").upload(`avatars/avatar-${id}.jpg`, file, {cacheControl: '3600'})
+      const imgURL = await supabase.storage.from("eduneura-bucket").getPublicUrl(`avatars/avatar-${id}.jpg`)
+      currentUserData.value.avatar = imgURL.data.publicUrl
+    } else if (!inputElem.value?.files?.[0] && currentUserData.value) {
+      currentUserData.value.avatar = currentUserData.value.avatar
+    }
+    await supabase.from('profiles').update({ first_name: currentUserFirstName.value, last_name: currentUserLastName.value, avatar: currentUserData.value?.avatar }).eq('id', currentUserData.value?.id)
+    // await supabase.auth.updateUser({ password: currentUserNewPassword.value, email: currentUserEmail.value })
+    visibleEditProfile.value = false
+  } else if (response == "Отменить") {
+    visibleEditProfile.value = false
+  }
+}
 async function signOut(): Promise<void>{
   await supabase.auth.signOut();
   router.push({ name: "login" })
 }
 onBeforeMount(async () => {
-  const { data, error } = await supabase.auth.getUser();
-  const userId = data.user?.id;
+  const { data, error } = await supabase.auth.getUser()
+  const userId = data.user?.id
+  currentUserEmail.value = data.user?.email!
   const profile = await supabase.from("profiles").select('*').eq('id', userId).single();
-  profile.data ? currentUserData.value = profile.data : null
+  if (profile.data) {
+    currentUserData.value = profile.data
+    currentUserFirstName.value = profile.data.first_name
+    currentUserLastName.value = profile.data.last_name
+  }
 })
 </script>
 

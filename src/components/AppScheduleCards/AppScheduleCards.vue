@@ -84,7 +84,6 @@ function createCard(): void {
     updateCards()
 }
 async function editCard(index: number): Promise<void>{
-
     mEditContent.value = lessons.value[index]?.content_card
     mEditTitle.value = lessons.value[index]?.title
     mEditMarkers.value = lessons.value[index]?.markers
