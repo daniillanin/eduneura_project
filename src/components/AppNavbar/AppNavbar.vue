@@ -33,7 +33,7 @@
                     <p>Выберите категорию</p>
                     <label v-for="item in store.tableCategory" :key="item">
                         <span>{{ item }}</span>
-                        <RadioButton v-model="tableCategory" :inputId="item" name="radio" :value="item" class="radio"/>
+                        <RadioButton v-model="tableCategory" :inputId="item" name="radio" :value="item" class="radio" :disabled="item === 'Общая'"/>
                     </label> 
                 </div>
             </div>
@@ -83,10 +83,27 @@
             <Button label="Сохранить" @click="resolvePromise?.('Сохранить')"></Button>
         </template>
     </Dialog>
+    <!-- создание маркера -->
+    <Dialog :visible="visibleCreateMarker" modal :closable="false" :style="{ width: '50rem' }" header="Маркер">
+      <template #default>
+        <div class="wrapper-dialog">
+          <p>Введите название</p>
+          <InputText v-model="markerTitle"/>
+          <div class="wrapper-color">
+            <p>Выберите цвет</p>
+            <ColorPicker v-model="markerColor" format="hex" inline/>
+            <p class="color-block" :style="{backgroundColor: '#'+markerColor}">Пример</p>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <Button label="Отменить" severity="secondary" @click="resolvePromise?.('Отменить')"></Button>
+        <Button label="Сохранить" severity="primary" @click="resolvePromise?.('Сохранить')" :disabled="!markerTitle"></Button>
+      </template>
+    </Dialog>
     <!-- редактирование маркеров -->
     <Dialog :visible="visibleEditMarkers" modal :closable="false" :style="{ width: '50rem' }" header="Редактирование маркеров">
       <template #default>
-        <p class="color-block">Если вы ошибочно удалили маркер, но еще не сохранили изменения, то для повторного отображения актуального списка потребуется перезагрузить страницу</p>
         <div v-for="(item, index) in markers" :key="item.id" class="wrapper-dialog-markers">
           <div class="wrapper-markers">
             <InputText v-model="item.title"/>
@@ -99,6 +116,15 @@
         <Button label="Отменить" severity="secondary" @click="resolvePromise?.('Отменить')"></Button>
         <Button label="Сохранить" severity="primary" @click="resolvePromise?.('Сохранить')"></Button>
       </template>
+    </Dialog>
+    <Dialog :visible="visibleDeleteMarker" modal :closable="false" header="Удалить маркер?" :style="{ width: '25rem' }">
+        <template #default>
+            <p>Если удалить маркер, то его будет невозможно восстановить. Все равно удалить маркер?</p>
+        </template>
+        <template #footer>
+            <Button type="button" label="Нет" severity="secondary" @click="resolvePromiseConfirm?.('Нет')"></Button>
+            <Button type="button" label="Да" @click="resolvePromiseConfirm?.('Да')"></Button>
+        </template>
     </Dialog>
   <Menubar :model="itemsMenuBar">
     <template #start>
@@ -154,11 +180,15 @@ const visibleCreateTable = ref(false)
 const visibleCreateInstruction = ref(false)
 const visibleCreateSchedule = ref(false)
 const visibleEditProfile = ref(false)
+const visibleCreateMarker = ref (false)
 const visibleEditMarkers = ref(false)
+const visibleDeleteMarker = ref(false)
 const instructionName = ref("")
 const instructionCategory = ref("")
 const scheduleName = ref("")
 const scheduleCategory = ref("")
+const markerTitle = ref("")
+const markerColor = ref("")
 const tableName = ref("")
 const tableCategory = ref("")
 const currentUserData = ref<User>()
@@ -167,6 +197,7 @@ const currentUserFirstName = ref("")
 const currentUserLastName = ref("")
 const currentUserNewPassword = ref("")
 const resolvePromise = ref<(value: string) => void>()
+const resolvePromiseConfirm = ref<(value: string) => void>()
 const inputElem = ref<HTMLInputElement>()
 const uploadImage = ref<File | null>(null)
 const markers = ref<Marker[] | null>(null)
@@ -277,6 +308,9 @@ function clickItemPanelBar(event: MenuItemCommandEvent): void {
     case "Создать расписание":
       createSchedule()
       break;
+    case "Создать маркер":
+      createMarker()
+      break;
     case "Изменить маркеры":
       editMarkers()
       break;
@@ -345,6 +379,19 @@ async function createSchedule(): Promise<void>{
     visibleCreateSchedule.value = false
   }
 }
+async function createMarker(): Promise<void>{
+  visibleCreateMarker.value = true
+  let response = await new Promise<string>((resolve) => {
+    resolvePromise.value = resolve
+  })
+  if (response == "Сохранить") {
+    let id_marker = `marker-${new Date().getTime()}`
+    await supabase.from('schedule_cards_markers').insert({ id: id_marker, title: markerTitle.value, color: markerColor.value })
+    visibleCreateMarker.value = false
+  } else if (response == "Отменить") {
+    visibleCreateMarker.value = false
+  }
+}
 async function editMarkers(): Promise<void> {
   visibleEditMarkers.value = true
   let response = await new Promise<string>((resolve) => {
@@ -359,9 +406,19 @@ async function editMarkers(): Promise<void> {
     visibleEditMarkers.value = false
   }
 }
-function deleteMarker(index: number): void {
-  if (markers.value) {
-    markers.value.splice(index, 1)
+async function deleteMarker(index: number): Promise<void> {
+  visibleDeleteMarker.value = true
+  let response = await new Promise((resolve) => {
+    resolvePromiseConfirm.value = resolve
+  })
+  if (response == "Да") {
+    if (markers.value && markers.value[index]) {
+      const { data, error } = await supabase.from("schedule_cards_markers").delete().eq('id', markers.value[index].id)
+      markers.value.splice(index, 1)
+      visibleDeleteMarker.value = false
+    }
+  } else if (response == "Нет") {
+    visibleDeleteMarker.value = false
   }
 }
 function showUserRole(): string | undefined {

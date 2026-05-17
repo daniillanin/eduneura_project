@@ -23,7 +23,7 @@ const tables = ref<TableMeta[]>([]);
 const selectedTable = ref<TableMeta>();
 
 onMounted(async () => {
-    let { data } = await supabase.from("tables_meta").select("*").eq("category", "Общая")
+    let { data } = await supabase.from("tables_meta").select("*").eq("category", "Табель")
     data ? tables.value = data : [] 
 })
 </script>

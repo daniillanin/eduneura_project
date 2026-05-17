@@ -76,10 +76,15 @@
         margin: 5px 0;
     }  
 }
-.color-block {
-    font-size: 0.9rem;
-    padding: 10px;
-    border: 1px solid transparent;
-    border-radius: 5px;
-    background-color: rgb(174, 237, 168);
+.wrapper-color {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    .color-block {
+        text-align: center;
+        min-width: 50%;
+        padding: 10px;
+        border: 1px solid transparent;
+        border-radius: 10px;
+    }
 }
