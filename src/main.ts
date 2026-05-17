@@ -6,6 +6,7 @@ import { createPinia } from 'pinia'
 import { supabase } from './database/supabase';
 
 import PrimeVue from 'primevue/config';
+import ToastService from 'primevue/toastservice';
 import Aura from '@primeuix/themes/aura';
 
 import App from './App.vue'
@@ -25,6 +26,7 @@ if(!app) {
             }
         }
     })
+    app.use(ToastService)
     app.mount('#app')
 } 
 if(session?.user) {

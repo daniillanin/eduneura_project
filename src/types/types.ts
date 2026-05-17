@@ -1,0 +1,1 @@
+export type toastTheme = 'info' | 'success' | 'warn' | 'error' | 'secondary' | 'contrast'

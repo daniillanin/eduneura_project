@@ -26,6 +26,10 @@
 .p-inputtext {
     width: 100%;
 }
+.p-colorpicker {
+    margin: auto 0px;
+    margin-left: 10px;
+}
 .wrapper-radio {
     display: flex;
     flex-flow: column nowrap;
@@ -45,6 +49,10 @@
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
+    p {
+        font-size: 0.8rem;
+        color: rgb(16, 185, 129)
+    }
     input {
         display: none;
     }
@@ -59,3 +67,19 @@
         } 
     }  
 } 
+.wrapper-dialog-markers {
+    display: flex;
+    flex-flow: column nowrap;
+    .wrapper-markers {
+        display: flex;
+        flex-flow: row nowrap;
+        margin: 5px 0;
+    }  
+}
+.color-block {
+    font-size: 0.9rem;
+    padding: 10px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background-color: rgb(174, 237, 168);
+}

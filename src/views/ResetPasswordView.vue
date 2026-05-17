@@ -18,18 +18,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import router from '@/router';
-import { supabase } from '@/database/supabase';
-import { Button, Message, Password, Toast } from "primevue";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useMainStore } from '@/stores/mainStore'
+import { supabase } from '@/database/supabase'
+import { Button, Message, Password, Toast } from "primevue"
+
+const store = useMainStore()
+const router = useRouter()
 
 const userPassword = ref("")
 
 async function updatePassword(): Promise<void> {
+    if (!userPassword.value) {
+        store.showAlert('error', 'Ошибка', 'Пароль не может быть пустым значением', 5000)
+        return
+    }
     const { data, error } = await supabase.auth.updateUser({
         password: userPassword.value
     })
-    router.push({ name: 'main' })
+    if (!error) {
+        store.showAlert('success', 'Успешно', 'Пароль успешно изменен', 5000)
+        router.push({ name: 'main' })
+    } else {
+        switch (error.code) {
+            case "same_password":
+                store.showAlert('error', 'Ошибка', 'Новый пароль не может повторять предыдущий', 5000)
+                break;
+            default:
+                store.showAlert('error', 'Ошибка', `Неверный формат пароля: ${error.message}`, 5000)
+                break;
+        }   
+    }    
 }
 </script>
 

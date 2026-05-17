@@ -16,7 +16,7 @@
         </template>
         <template #footer>
             <div class="markers">
-                <div v-for="(idMarker) in props.dataCard.markers" :key="idMarker" class="marker" :style="{'background-color': markers?.find(item => item.id === idMarker)?.color}">
+                <div v-for="(idMarker) in props.dataCard.markers" :key="idMarker" class="marker" :style="{'background-color': `#${markers?.find(item => item.id === idMarker)?.color}`}">
                 {{ markers?.find(item => item.id === idMarker)?.title }}
                 </div>
             </div>

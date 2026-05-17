@@ -4,9 +4,9 @@
     <template #default>
       <div class="wrapper-dialog">
         <div class="wrapper-dialog-avatar">
-          <!-- <p>Аватар</p> -->
           <img :src="currentUserData?.avatar" @click="inputElem?.click">
-          <input ref="inputElem" type="file" accept="image/jpg"></input>
+          <p v-if="uploadImage">изображение выбрано</p>
+          <input ref="inputElem" type="file" accept="image/jpg" @change="controlUploadFile"></input>
         </div>
         <p>Имя</p>
         <InputText v-model="currentUserFirstName"/>
@@ -83,6 +83,23 @@
             <Button label="Сохранить" @click="resolvePromise?.('Сохранить')"></Button>
         </template>
     </Dialog>
+    <!-- редактирование маркеров -->
+    <Dialog :visible="visibleEditMarkers" modal :closable="false" :style="{ width: '50rem' }" header="Редактирование маркеров">
+      <template #default>
+        <p class="color-block">Если вы ошибочно удалили маркер, но еще не сохранили изменения, то для повторного отображения актуального списка потребуется перезагрузить страницу</p>
+        <div v-for="(item, index) in markers" :key="item.id" class="wrapper-dialog-markers">
+          <div class="wrapper-markers">
+            <InputText v-model="item.title"/>
+            <ColorPicker v-model="item.color" format="hex"/>
+            <Button text icon="pi pi-trash" severity="secondary" @click="deleteMarker(index)"></Button>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <Button label="Отменить" severity="secondary" @click="resolvePromise?.('Отменить')"></Button>
+        <Button label="Сохранить" severity="primary" @click="resolvePromise?.('Сохранить')"></Button>
+      </template>
+    </Dialog>
   <Menubar :model="itemsMenuBar">
     <template #start>
       <img src="/eduneura_logo.png" width="140px">
@@ -110,20 +127,20 @@
     </template>
     <PanelMenu :model="itemsPanelBar"/>
     <template #footer>
-      <Button label="Выйти" icon="pi pi-sign-out" class="flex-auto" severity="danger" text @click="signOut"></Button>
       <Button label="Профиль" icon="pi pi-cog" class="flex-auto" severity="secondary" text @click="editProfile"></Button>
+      <Button label="Выйти" icon="pi pi-sign-out" class="flex-auto" severity="danger" text @click="signOut"></Button>
     </template>
   </Drawer>
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount ,ref, nextTick } from "vue"
+import { onBeforeMount ,ref, nextTick, watch } from "vue"
 import { useRoute, useRouter } from 'vue-router'
 import { useMainStore } from "@/stores/mainStore"
 import { supabase } from "@/database/supabase"
-import type { User, MenuBar, PanelBar } from "@/types/interfaces"
+import type { User, Marker, MenuBar, PanelBar } from "@/types/interfaces"
 import type { MenuItemCommandEvent } from "primevue/menuitem"
-import { Menubar, Button, InputText, Dialog, RadioButton } from "primevue"
+import { Menubar, Button, InputText, Dialog, RadioButton, ColorPicker } from "primevue"
 import PanelMenu from 'primevue/panelmenu'
 import Drawer from 'primevue/drawer'
 import Avatar from 'primevue/avatar'
@@ -137,6 +154,7 @@ const visibleCreateTable = ref(false)
 const visibleCreateInstruction = ref(false)
 const visibleCreateSchedule = ref(false)
 const visibleEditProfile = ref(false)
+const visibleEditMarkers = ref(false)
 const instructionName = ref("")
 const instructionCategory = ref("")
 const scheduleName = ref("")
@@ -150,6 +168,8 @@ const currentUserLastName = ref("")
 const currentUserNewPassword = ref("")
 const resolvePromise = ref<(value: string) => void>()
 const inputElem = ref<HTMLInputElement>()
+const uploadImage = ref<File | null>(null)
+const markers = ref<Marker[] | null>(null)
 
 const itemsMenuBar = ref<MenuBar[]>([
   {
@@ -219,7 +239,7 @@ const itemsPanelBar = ref<PanelBar[]>([
     ]
   },
   {
-    label: 'Расписания',
+    label: 'Расписание',
     icon: 'pi pi-clipboard',
     items: [
       {
@@ -227,11 +247,22 @@ const itemsPanelBar = ref<PanelBar[]>([
         icon: 'pi pi-plus',
         command: clickItemPanelBar
       },
-      // {
-      //   label: 'Изменить маркеры',
-      //   icon: 'pi pi-circle',
-      //   command: clickItemPanelBar
-      // }
+      {
+        label: 'Маркеры',
+        icon: 'pi pi-circle',
+        items: [
+          {
+          label: 'Создать маркер',
+          icon: 'pi pi-plus',
+          command: clickItemPanelBar
+          },
+          {
+          label: 'Изменить маркеры',
+          icon: 'pi pi-pencil',
+          command: clickItemPanelBar
+          }
+        ]
+      }
     ]
   },
 ])
@@ -245,6 +276,9 @@ function clickItemPanelBar(event: MenuItemCommandEvent): void {
       break;
     case "Создать расписание":
       createSchedule()
+      break;
+    case "Изменить маркеры":
+      editMarkers()
       break;
   }
 }
@@ -311,6 +345,25 @@ async function createSchedule(): Promise<void>{
     visibleCreateSchedule.value = false
   }
 }
+async function editMarkers(): Promise<void> {
+  visibleEditMarkers.value = true
+  let response = await new Promise<string>((resolve) => {
+    resolvePromise.value = resolve
+  })
+  if (response == "Сохранить") {
+    if (markers.value) {
+      const {data, error } = await supabase.from('schedule_cards_markers').upsert(markers.value)
+    }
+    visibleEditMarkers.value = false
+  } else if (response == "Отменить") {
+    visibleEditMarkers.value = false
+  }
+}
+function deleteMarker(index: number): void {
+  if (markers.value) {
+    markers.value.splice(index, 1)
+  }
+}
 function showUserRole(): string | undefined {
   switch (currentUserData.value?.role) {
     case "user":
@@ -343,8 +396,16 @@ async function editProfile(): Promise<void> {
     await supabase.from('profiles').update({ first_name: currentUserFirstName.value, last_name: currentUserLastName.value, avatar: currentUserData.value?.avatar }).eq('id', currentUserData.value?.id)
     // await supabase.auth.updateUser({ password: currentUserNewPassword.value, email: currentUserEmail.value })
     visibleEditProfile.value = false
+    uploadImage.value = null
   } else if (response == "Отменить") {
     visibleEditProfile.value = false
+    uploadImage.value = null
+  }
+}
+function controlUploadFile(event: Event): void {
+  let input = event.target as HTMLInputElement
+  if (input.files?.[0]) {
+    uploadImage.value = input.files?.[0]
   }
 }
 async function signOut(): Promise<void>{
@@ -353,14 +414,15 @@ async function signOut(): Promise<void>{
 }
 onBeforeMount(async () => {
   const { data, error } = await supabase.auth.getUser()
-  const userId = data.user?.id
   currentUserEmail.value = data.user?.email!
-  const profile = await supabase.from("profiles").select('*').eq('id', userId).single();
+  const profile = await supabase.from("profiles").select('*').eq('id', data.user?.id).single()
   if (profile.data) {
     currentUserData.value = profile.data
     currentUserFirstName.value = profile.data.first_name
     currentUserLastName.value = profile.data.last_name
   }
+  const markers_data = await supabase.from("schedule_cards_markers").select('*')
+  markers.value = markers_data.data
 })
 </script>
 

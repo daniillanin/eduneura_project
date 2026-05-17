@@ -47,10 +47,10 @@
             :frozen="index == 0 ? columnFrozen : false">
                 <template #header="{ column }">
                     <div class="wrapper-edit-column-button">
-                        <Button text icon="pi pi-chevron-left" severity="secondary" size="small" id="left" :disabled="index == 0" @click="shiftColumn($event, column)"></Button>
-                        <Button text icon="pi pi-chevron-right" severity="secondary" size="small" id="right" @click="shiftColumn($event, column)"></Button>
-                        <Button text icon="pi pi-pencil" severity="secondary" size="small" @click="editNameColumn(column)"></Button>
-                        <Button text icon="pi pi-times" severity="secondary" size="small" @click="deleteColumn(column)"></Button>
+                        <Button text icon="pi pi-chevron-left" severity="secondary" size="small" id="left" :disabled="index == 0" @click="shiftColumn($event, index)"></Button>
+                        <Button text icon="pi pi-chevron-right" severity="secondary" size="small" id="right" @click="shiftColumn($event, index)"></Button>
+                        <Button text icon="pi pi-pencil" severity="secondary" size="small" @click="editNameColumn(index)"></Button>
+                        <Button text icon="pi pi-times" severity="secondary" size="small" @click="deleteColumn(index)"></Button>
                         <Button v-if="index == 0" text icon="pi pi-lock" severity="secondary" size="small" @click="columnFrozen = !columnFrozen"></Button>
                     </div>
                 </template>
@@ -77,7 +77,7 @@ import { useMainStore } from '@/stores/mainStore'
 import { supabase } from '@/database/supabase'
 import type { TableColumn, TableRow } from '@/types/interfaces'
 import type { DataTableCellEditCompleteEvent } from 'primevue/datatable'
-import { DataTable, Dialog, Column, InputText, Textarea, RadioButton, Button, type ColumnNode } from 'primevue'
+import { DataTable, Dialog, Column, InputText, Textarea, RadioButton, Button } from 'primevue'
 
 const store = useMainStore()
 const props = defineProps(["tableID"])
@@ -85,13 +85,12 @@ const props = defineProps(["tableID"])
 const visibleEditTable = ref(false)
 const visibleEditColumn = ref(false)
 const tableElement = ref()
-const tableName = ref("")
-const tableCategory = ref("")
-const columns = ref<TableColumn[]>([])
-const rows = ref<TableRow[]>([])
-const columnIndex = ref(0)
 const columnName = ref("")
 const columnFrozen = ref(false)
+const tableName = ref<string | null>(null)
+const tableCategory = ref<string | null>(null)
+const columns = ref<TableColumn[] | null>(null)
+const rows = ref<TableRow[] | null>(null)
 const resolvePromise = ref<(value: string) => void>()
 
 function createColumn(): void {
@@ -109,46 +108,47 @@ function createColumn(): void {
     }
 }
 function createRow(): void {
-    let id_columns = [];
-    for (let item of columns.value) {                                           //перебор массива столбцов чтобы вытащить в отдельный массив названия столбцов которые на данный момент есть в таблице
-        id_columns.push(item.id)
-    }
-    let row = Object.fromEntries(id_columns.map(key => [key, ""])) as TableRow  //каждому свойству присваивается пустое значение ""
-    row.id = `row-${new Date().getTime()}`                                      //строке присваивается уникальный id потому что редактор определяет какую строку активировать по свойству id
-    if (rows.value) {
-        rows.value.push(row)
-        updateRows()
-    } else {
-        rows.value = []
-        rows.value.push(row)
-        updateRows()
-    }
+    let id_columns = []
+    if (columns.value) {
+        for (let item of columns.value) {                                           //перебор массива столбцов чтобы вытащить в отдельный массив названия столбцов которые на данный момент есть в таблице
+            id_columns.push(item.id)
+        }
+        let row = Object.fromEntries(id_columns.map(key => [key, ""])) as TableRow  //каждому свойству присваивается пустое значение ""
+        row.id = `row-${new Date().getTime()}`                                      //строке присваивается уникальный id потому что редактор определяет какую строку активировать по свойству id
+        if (rows.value) {
+            rows.value.push(row)
+            updateRows()
+        } else {
+            rows.value = []
+            rows.value.push(row)
+            updateRows()
+        }
+    }  
 }
-async function updateTables(){
+async function updateTables(): Promise<void>{
     await supabase.from('tables_meta').update({ name: tableName.value, category: tableCategory.value}).eq('id', props.tableID)
 }
-async function updateColumns(){
+async function updateColumns(): Promise<void>{
     await supabase.from('tables_columns').update({ columns: columns.value}).eq('id', props.tableID)
 }
-async function updateRows(){
+async function updateRows(): Promise<void>{
     await supabase.from('tables_rows').update({ rows: rows.value}).eq('id', props.tableID)
 }
-function shiftColumn(event: Event, column) {
-    console.log(column);
-    
-    let target = event.currentTarget as HTMLElement 
-    let index = columns.value.findIndex(item => item.id === column.key)
-    let copy_column = columns.value[index]
-    columns.value.splice(index, 1)
-    switch (target.id) {
-        case "right": 
-            columns.value.splice(index + 1, 0, copy_column)
-            break;
-        case "left":
-            columns.value.splice(index - 1, 0, copy_column)
-            break;
-    }
-    updateColumns()
+function shiftColumn(event: Event, index: number) {
+    let target = event.currentTarget as HTMLElement
+    if (columns.value && columns.value[index]) {
+        let copy_column = columns.value[index]
+        columns.value.splice(index, 1)
+        switch (target.id) {
+            case "right": 
+                columns.value.splice(index + 1, 0, copy_column)
+                break;
+            case "left":
+                columns.value.splice(index - 1, 0, copy_column)
+                break;
+        }
+        updateColumns()
+    }   
 }
 async function editTable(): Promise<void> {
     visibleEditTable.value = true
@@ -162,35 +162,38 @@ async function editTable(): Promise<void> {
         visibleEditTable.value = false
     }
 }
-async function editNameColumn(column) {
-    let index = columns.value.findIndex(item => item.id === column.key)
-    columnIndex.value = index
-    columnName.value = columns.value[index].header
-    visibleEditColumn.value = true
-    let response = await new Promise<string>((resolve) => {
-        resolvePromise.value = resolve
-    })
-    if (response == "Сохранить") {
-        columns.value[columnIndex.value].header = columnName.value
-        visibleEditColumn.value = false
-        updateColumns()
-    } else {
-        visibleEditColumn.value = false
-    }
+async function editNameColumn(index: number) {
+    if (columns.value && columns.value[index]) { 
+        columnName.value = columns.value[index].header
+        visibleEditColumn.value = true
+        let response = await new Promise<string>((resolve) => {
+            resolvePromise.value = resolve
+        })
+        if (response == "Сохранить") {
+            columns.value[index].header = columnName.value
+            visibleEditColumn.value = false
+            updateColumns()
+        } else {
+            visibleEditColumn.value = false
+        }
+    }  
 }
 const onCellEditComplete = (event: DataTableCellEditCompleteEvent) => {
     let { data, newValue, field } = event;
     newValue ? data[field] = newValue : data[field] = ""
     updateRows()
 }
-function deleteColumn(column): void {
-    let index = columns.value.findIndex(item => item.id === column.key)
-    columns.value.splice(index, 1)
-    updateColumns()
+function deleteColumn(index: number): void {
+    if (columns.value) {
+        columns.value.splice(index, 1)
+        updateColumns()
+    }
 }
 function deleteRow(index: number): void {
-    rows.value.splice(index, 1)
-    updateRows()
+    if (rows.value) {
+        rows.value.splice(index, 1)
+        updateRows()
+    }
 }
 function exportCSV(): void {
     tableElement.value.exportCSV()
@@ -199,10 +202,12 @@ watch(() => props.tableID, async (tableID_actual) => {
     let table_meta = await supabase.from("tables_meta").select("*").eq("id", tableID_actual).single()
     let table_columns = await supabase.from("tables_columns").select("columns").eq("id", tableID_actual).single()
     let table_rows = await supabase.from("tables_rows").select("rows").eq("id", tableID_actual).single()
-    tableName.value = table_meta.data.name
-    tableCategory.value = table_meta.data.category
-    columns.value = table_columns.data ? table_columns.data.columns : []
-    rows.value = table_rows.data ? table_rows.data.rows : []
+    if (table_meta.data) {
+        tableName.value = table_meta.data.name
+        tableCategory.value = table_meta.data.category
+    }
+    columns.value = table_columns.data ? table_columns.data.columns : null
+    rows.value = table_rows.data ? table_rows.data.rows : null
 })
 </script>
 

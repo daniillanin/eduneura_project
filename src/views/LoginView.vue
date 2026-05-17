@@ -1,4 +1,5 @@
 <template>
+    <Toast position="top-center" :base-z-index="1"/>
     <Dialog :visible="visible" modal :closable="false" header="Edit Profile" :style="{ width: '25rem' }">
         <template #header>
             <div class="block">
@@ -11,7 +12,6 @@
             <Button type="button" label="Да" @click="resetPassword"></Button>
         </template>
     </Dialog>
-    <Toast position="top-center" :base-z-index="1"/>
     <div class="wrapper">
         <div class="wrapper-icon">
             <img src="/eduneura_logo.png"/>
@@ -53,11 +53,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import router from '@/router';
-import { supabase } from '@/database/supabase';
-import type { User } from '@/types/interfaces';
-import { Dialog, Button, InputText, Message, Password, Toast } from "primevue";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useMainStore } from '@/stores/mainStore'
+import { supabase } from '@/database/supabase'
+import type { User } from '@/types/interfaces'
+import { Dialog, Button, InputText, Message, Password, Toast } from "primevue"
+
+const store = useMainStore()
+const router = useRouter()
 
 const userEmail = ref("")
 const userPassword = ref("")
@@ -67,39 +71,54 @@ const visible = ref(false)
 const isRegistrationForm = ref(true)
 
 async function signUp(): Promise<void>{
+    if (!userFirstName.value || !userLastName.value) {
+        store.showAlert('error', 'Ошибка' ,'Поля "Имя и "Фамиилия" не могут быть пустыми', 5000)
+        return
+    }
     const { data, error } = await supabase.auth.signUp({
         email: userEmail.value,
         password: userPassword.value,
     })
-    // обязательно прописать уведомления при ошибках
-    let currentUser = await supabase.auth.getUser();
-    if (currentUser.data.user) {
-        let newUser: User = {
-            id: currentUser.data.user.id,
-            first_name: userFirstName.value,
-            last_name: userLastName.value,
-            avatar: "/avatar_default.jpg",
-            role: 'user'
+    if (!error) {
+        let currentUser = await supabase.auth.getUser();
+        if (currentUser.data.user) {
+            let newUser: User = {
+                id: currentUser.data.user.id,
+                first_name: userFirstName.value,
+                last_name: userLastName.value,
+                avatar: "/avatar_default.jpg",
+                role: 'user'
+            }
+            await supabase.from("profiles").upsert(newUser).select("*")
         }
-        await supabase.from("profiles").upsert(newUser).select("*")
+        store.showAlert('success', 'Успешно' ,'Пользователь зарегистрирован', 5000)
+        router.push({ name: 'main' })
+    } else {
+        store.showAlert('error', 'Ошибка' ,'Неверный формат email или пароль ', 5000)
     }
-    // обязательно прописать уведомления о успешности
-    router.push({ name: 'main' })
 }
 async function signIn(): Promise<void> {
     const { data, error } = await supabase.auth.signInWithPassword({
         email: userEmail.value,
         password: userPassword.value,
     })
-    // обязательно прописать уведомления при ошибках
-    // обязательно прописать уведомления о успешности
-    router.push({ name: 'main' })
+    if (!error) {
+        store.showAlert('success', 'Успешно' ,'Успешный вход', 5000)
+        router.push({ name: 'main' })
+    } else {
+        store.showAlert('error', 'Ошибка' ,'Неверный логин или пароль', 5000)
+    }
 }
 async function resetPassword(): Promise<void> {
     const { data, error } = await supabase.auth.resetPasswordForEmail(userEmail.value, {
         redirectTo: 'http://localhost:3000/resetpassword'
-    });
-    visible.value = false
+    })
+    if (!error) {
+        store.showAlert('success', 'Успешно' ,'Ссылка на сброс пароля отправлена на указанный email', 5000)
+        visible.value = false
+    } else {
+        store.showAlert('error', 'Ошибка' ,'Сервис временно недоступен. Попробуйте позже', 5000)
+    }
 }
 </script>
 
