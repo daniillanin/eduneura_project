@@ -8,7 +8,7 @@
                     <p>Выберите категорию</p>
                     <label v-for="item in store.tableCategory" :key="item">
                         <span>{{ item }}</span>
-                        <RadioButton v-model="tableCategory" :inputId="item" name="radio" :value="item" class="radio"/>
+                        <RadioButton v-model="tableCategory" :inputId="item" name="radio" :value="item" class="radio" :disabled="item === 'Общая'"/>
                     </label> 
                 </div>
         </template>
@@ -39,7 +39,7 @@
             <Button text icon="pi pi-download" severity="secondary" label=".csv" @click="exportCSV" :disabled="!columns || columns.length == 0"></Button>
             <Button text icon="pi pi-cog" severity="secondary" @click="editTable"></Button>
         </div>
-        <DataTable :value="rows" editMode="cell" @cell-edit-complete="onCellEditComplete" ref="tableElement" removableSort scrollable
+        <DataTable :value="rows" editMode="cell" @cell-edit-complete="onCellEditComplete" ref="tableElement" stripedRows removableSort scrollable
         paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]"
         :pt="{ table: { style: 'min-width: 50rem' }, column: { bodycell: ({ state }: any) => ({class: [{ '!py-0': state['d_editing'] }]})}}">
             <Column v-for="(item, index) of columns" :key="item.id" :field="item.id" :header="item.header"

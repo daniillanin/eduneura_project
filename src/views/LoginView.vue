@@ -92,6 +92,9 @@ async function signUp(): Promise<void>{
             await supabase.from("profiles").upsert(newUser).select("*")
         }
         store.showAlert('success', 'Успешно' ,'Пользователь зарегистрирован', 5000)
+        const { data } = await supabase.auth.getUser()
+        const user = await supabase.from("profiles").select('*').eq('id', data.user?.id).single()
+        store.currentUserData = user.data
         router.push({ name: 'main' })
     } else {
         store.showAlert('error', 'Ошибка' ,'Неверный формат email или пароль ', 5000)
@@ -104,6 +107,9 @@ async function signIn(): Promise<void> {
     })
     if (!error) {
         store.showAlert('success', 'Успешно' ,'Успешный вход', 5000)
+        const { data } = await supabase.auth.getUser()
+        const user = await supabase.from("profiles").select('*').eq('id', data.user?.id).single()
+        store.currentUserData = user.data
         router.push({ name: 'main' })
     } else {
         store.showAlert('error', 'Ошибка' ,'Неверный логин или пароль', 5000)

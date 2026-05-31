@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, provide } from 'vue';
+import { ref, onMounted, provide, watch } from 'vue';
 import { useRouter, useRoute, RouterView } from 'vue-router';
 import { useMainStore } from '@/stores/mainStore';
 import { supabase } from '@/database/supabase';
@@ -78,6 +78,9 @@ async function editSchedule(): Promise<void> {
         visibleEditSchedule.value = false
     }
 }
+watch(selectedSchedule, () => {
+    router.push({name: 'lists'})
+})
 onMounted(async () => {
     let { data } = await supabase.from("schedules").select("*").eq("category", "Общая")
     data ? schedules.value = data : []

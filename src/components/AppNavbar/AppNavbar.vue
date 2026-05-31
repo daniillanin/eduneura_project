@@ -1,4 +1,5 @@
 <template>
+  <Toast position="top-center" :base-z-index="1"/>
   <!-- редактирование профиля -->
   <Dialog :visible="visibleEditProfile" modal :closable="false" :style="{ width: '25rem' }" header="Профиль">
     <template #default>
@@ -40,7 +41,7 @@
         </template>
         <template #footer>
             <Button severity="secondary" label="Отменить" @click="resolvePromise?.('Отменить')"></Button>
-            <Button label="Сохранить" @click="resolvePromise?.('Сохранить')"></Button>
+            <Button label="Сохранить" @click="resolvePromise?.('Сохранить')" :disabled="!tableCategory"></Button>
         </template>
     </Dialog>
     <!-- создание инструкции -->
@@ -60,7 +61,7 @@
         </template>
         <template #footer>
             <Button severity="secondary" label="Отменить" @click="resolvePromise?.('Отменить')"></Button>
-            <Button label="Сохранить" @click="resolvePromise?.('Сохранить')"></Button>
+            <Button label="Сохранить" @click="resolvePromise?.('Сохранить')" :disabled="!instructionCategory"></Button>
         </template>
     </Dialog>
     <!-- создание расписания -->
@@ -128,7 +129,7 @@
     </Dialog>
   <Menubar :model="itemsMenuBar">
     <template #start>
-      <img src="/eduneura_logo.png" width="140px">
+      <img src="/eduneura_logo.png" width="140px" @click="router.push({name: 'main'})">
     </template>
     <template #end>
         <button @click="visible = !visible">
@@ -166,7 +167,7 @@ import { useMainStore } from "@/stores/mainStore"
 import { supabase } from "@/database/supabase"
 import type { User, Marker, MenuBar, PanelBar } from "@/types/interfaces"
 import type { MenuItemCommandEvent } from "primevue/menuitem"
-import { Menubar, Button, InputText, Dialog, RadioButton, ColorPicker } from "primevue"
+import { Menubar, Button, InputText, Dialog, RadioButton, ColorPicker, Toast } from "primevue"
 import PanelMenu from 'primevue/panelmenu'
 import Drawer from 'primevue/drawer'
 import Avatar from 'primevue/avatar'
@@ -349,6 +350,7 @@ async function createTable(): Promise<void>{
     await supabase.from('tables_columns').insert({ id: id_table, columns: null })
     await supabase.from('tables_rows').insert({ id: id_table, rows: null })
     visibleCreateTable.value = false
+    store.showAlert('success', 'Успешно', 'Для работы с созданным элементом обновите страницу', 10000)
   } else if (response == "Отменить") {
     visibleCreateTable.value = false
   }
@@ -362,6 +364,7 @@ async function createInstruction(): Promise<void>{
     let id_instruction = `instruction-${new Date().getTime()}`
     await supabase.from('instructions').insert({ id: id_instruction, name: instructionName.value, category: instructionCategory.value, content: "<p>Контент</p>"})
     visibleCreateInstruction.value = false
+    store.showAlert('success', 'Успешно', 'Для работы с созданным элементом обновите страницу', 10000)
   } else if (response == "Отменить") {
     visibleCreateInstruction.value = false
   }
@@ -375,6 +378,7 @@ async function createSchedule(): Promise<void>{
     let id_schedule = `schedule-${new Date().getTime()}`
     await supabase.from('schedules').insert({ id: id_schedule, name: scheduleName.value, category: "Общая", lessons: []})
     visibleCreateSchedule.value = false
+    store.showAlert('success', 'Успешно', 'Для работы с созданным элементом обновите страницу', 10000)
   } else if (response == "Отменить") {
     visibleCreateSchedule.value = false
   }
@@ -388,6 +392,7 @@ async function createMarker(): Promise<void>{
     let id_marker = `marker-${new Date().getTime()}`
     await supabase.from('schedule_cards_markers').insert({ id: id_marker, title: markerTitle.value, color: markerColor.value })
     visibleCreateMarker.value = false
+    store.showAlert('success', 'Успешно', 'Для работы с созданным элементом обновите страницу', 10000)
   } else if (response == "Отменить") {
     visibleCreateMarker.value = false
   }
@@ -466,8 +471,9 @@ function controlUploadFile(event: Event): void {
   }
 }
 async function signOut(): Promise<void>{
-  await supabase.auth.signOut();
+  await supabase.auth.signOut()
   router.push({ name: "login" })
+  store.currentUserData = null
 }
 onBeforeMount(async () => {
   const { data, error } = await supabase.auth.getUser()

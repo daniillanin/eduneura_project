@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useMainStore } from '@/stores/mainStore'
 import { supabase } from '@/database/supabase'
 import HomeView from '@/views/HomeView.vue'
 
@@ -9,7 +10,8 @@ const router = createRouter({
       path: '/',
       name: 'main',
       meta: {
-        isRequireAuth: true
+        isRequireAuth: true,
+        isRequireAdmin: false
       },
       component: HomeView,
       children: [
@@ -17,7 +19,8 @@ const router = createRouter({
           path: 'schedule',
           name: 'schedule',
           meta: {
-            isRequireAuth: true
+            isRequireAuth: true,
+            isRequireAdmin: false
           },
           component: () => import('../views/ScheduleView.vue'),
           children: [
@@ -25,7 +28,8 @@ const router = createRouter({
               path: 'cards',
               name: 'cards',
               meta: {
-              isRequireAuth: true
+              isRequireAuth: true,
+              isRequireAdmin: false
               },
               component: () => import('../components/AppScheduleCards/AppScheduleCards.vue'),
             },
@@ -33,7 +37,8 @@ const router = createRouter({
               path: 'lists',
               name: 'lists',
               meta: {
-              isRequireAuth: true
+              isRequireAuth: true,
+              isRequireAdmin: false
               },
               component: () => import('../components/AppScheduleLists/AppScheduleLists.vue'),
             }
@@ -43,7 +48,8 @@ const router = createRouter({
           path: 'timesheet',
           name: 'timesheet',
           meta: {
-            isRequireAuth: true
+            isRequireAuth: true,
+            isRequireAdmin: false
           },
           component: () => import('../views/TimesheetView.vue'),
         },
@@ -51,7 +57,8 @@ const router = createRouter({
           path: 'graphs/support',
           name: 'support',
           meta: {
-            isRequireAuth: true
+            isRequireAuth: true,
+            isRequireAdmin: false
           },
           component: () => import('../views/graphs/SupportView.vue'),
         },
@@ -59,7 +66,8 @@ const router = createRouter({
           path: 'graphs/lectors',
           name: 'lectors',
           meta: {
-            isRequireAuth: true
+            isRequireAuth: true,
+            isRequireAdmin: false
           },
           component: () => import('../views/graphs/LectorsView.vue'),
         },
@@ -67,7 +75,8 @@ const router = createRouter({
           path: 'instructions/students',
           name: 'instructions_students',
           meta: {
-            isRequireAuth: true
+            isRequireAuth: true,
+            isRequireAdmin: false
           },
           component: () => import('../views/instructions/StudentsView.vue'),
         },
@@ -75,7 +84,8 @@ const router = createRouter({
           path: 'instructions/lectors',
           name: 'instructions_lectors',
           meta: {
-            isRequireAuth: true
+            isRequireAuth: true,
+            isRequireAdmin: false
           },
           component: () => import('../views/instructions/LectorsView.vue'),
         },
@@ -85,7 +95,8 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       meta: {
-          isRequireAuth: false
+          isRequireAuth: false,
+          isRequireAdmin: false
         },
       component: () => import('../views/LoginView.vue'),
     },
@@ -93,7 +104,8 @@ const router = createRouter({
       path: '/resetpassword',
       name: 'resetpassword',
       meta: {
-          isRequireAuth: true
+          isRequireAuth: true,
+          isRequireAdmin: false
         },
       component: () => import('../views/ResetPasswordView.vue'),
     },
@@ -101,37 +113,29 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from) => {
-  const local = JSON.parse(localStorage.getItem("sb-ybydluillbwvivnlvgqo-auth-token")!)
-  if (local) {
-    let user = local.user
-    let require = to.matched.some(item => item.meta.isRequireAuth);
-    if (user) {                   
-      const { data, error } = await supabase.from("profiles").select('*').eq('id', user.id)   //получение роли пользователя (если понадобится в будущем)   
-    }
-    if(require && !user) {        //если страница требует аутентификации и пользователь НЕ в системе
-        return "/login"
-    }
-    if(!require && user) {        //если страница НЕ требует аутентификации и пользователь в системе
-        return "/"
-    }
-    else {
-        return true               //true разрешает любой переход
+  const store = useMainStore()
+  let localUserData = JSON.parse(localStorage.getItem("sb-ybydluillbwvivnlvgqo-auth-token")!)
+  let requireAuth = to.matched.some(item => item.meta.isRequireAuth)
+  let requireAdmin = to.matched.some(item => item.meta.isRequireAdmin)
+
+  if (!localUserData) {   //если в localStorage нет данных пользователя значит сессия НЕ активна и пользователь аноним
+    if (requireAuth) {    //если страница требует аутентификации
+      return "/login"
+    } else {
+      return true         //true разрешает переход
     }
   } else {
-    let { data, error } = await supabase.auth.getUser();
-    let user = data.user
-    let require = to.matched.some(item => item.meta.isRequireAuth);
-    if (user) {                   
-      const { data, error } = await supabase.from("profiles").select('*').eq('id', user.id)   //получение роли пользователя (если понадобится в будущем)   
-    }
-    if(require && !user) {        //если страница требует аутентификации и пользователь НЕ в системе
-        return "/login"
-    }
-    if(!require && user) {        //если страница НЕ требует аутентификации и пользователь в системе
-        return "/"
-    }
-    else {
-        return true               //true разрешает любой переход
+    if (!store.currentUserData) {
+      const user = await supabase.from("profiles").select('*').eq('id', localUserData.user.id).single()
+      store.currentUserData = user.data
+    } else {
+       if (requireAdmin && store.currentUserData?.role === "admin") {
+        return true
+      } else if (requireAdmin && store.currentUserData?.role !== "admin") {
+        return false      //false запрещает переход
+      } else {
+        return true
+      }
     }
   } 
 })

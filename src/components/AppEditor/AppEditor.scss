@@ -1,33 +1,52 @@
+ @mixin icon {                    
+          margin: 0 2px;
+          padding: 3px 3px;
+          border: 1px solid transparent;
+          border-radius: 5px;
+          background-color: rgb(255 255 255);
+          cursor: pointer;
+          &:hover {
+            background-color: rgb(236, 236, 236);
+          }
+          svg {
+            // убирает лишний зазор снизу у SVG
+            display: block;
+            width: 24px;
+            height: 24px;
+            &:not(.color) {
+              fill: rgb(43, 42, 42);
+            }
+          }
+        }
+
+.p-popover-content {
+  display: flex;
+  flex-flow: column nowrap;
+  .p-colorpicker {
+    margin: 0 0 10px 0;
+  }
+}
 .editor-content {
   margin-top: 20px;
   overflow: scroll;
   max-height: 80vh;
 }
 .wrapper {
-  margin-right: 5px;
-  border: 1px solid grey;
+  border: 1px solid lightgray;
   border-radius: 5px;
-  padding: 2px
+  padding: 2px;
+  &:nth-child(even) {
+    margin: 5px 0;
+  }
+  button {
+    @include icon;
+  }
 }
 .wrapper-editor-button {
   display: flex;
   justify-content: center;
   button {
-    margin: 0 2px;
-    padding: 1px 3px;
-    border: 1px solid transparent;
-    border-radius: 5px;
-    background-color: rgb(255 255 255);
-    cursor: pointer;
-    &:hover {
-      background-color: rgb(236, 236, 236);
-    }
-    img {
-      // убирает лишний зазор снизу у IMG
-      display: block;
-      // устанавливает цвет SVG иконки (для конвертации использовать https://angel-rs.github.io/css-color-filter-generator)
-      filter: brightness(0) saturate(100%) invert(56%) sepia(9%) saturate(8%) hue-rotate(352deg) brightness(88%) contrast(85%);
-    }
+    @include icon;
   }
 }
 .is-active {
