@@ -45,6 +45,15 @@ const router = createRouter({
           ]
         },
         {
+          path: 'users',
+          name: 'users',
+          meta: {
+            isRequireAuth: true,
+            isRequireAdmin: false
+          },
+          component: () => import('../views/UsersView.vue')
+        },
+        {
           path: 'timesheet',
           name: 'timesheet',
           meta: {
@@ -122,7 +131,7 @@ router.beforeEach(async (to, from) => {
     if (requireAuth) {    //если страница требует аутентификации
       return "/login"
     } else {
-      return true         //true разрешает переход
+      return true         //true разрешает переход, false запрещает переход
     }
   } else {
     if (!store.currentUserData) {
@@ -132,7 +141,7 @@ router.beforeEach(async (to, from) => {
        if (requireAdmin && store.currentUserData?.role === "admin") {
         return true
       } else if (requireAdmin && store.currentUserData?.role !== "admin") {
-        return false      //false запрещает переход
+        return false
       } else {
         return true
       }

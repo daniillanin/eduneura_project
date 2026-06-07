@@ -17,7 +17,10 @@ export interface User {
     first_name: string;
     last_name: string;
     avatar: string;
-    role: "user" | "editor" | "admin"
+    role: "user" | "editor" | "admin";
+    active: boolean;
+    schedules: string[] | null;
+    instructions: string[] | null
 }
 export interface TableColumn {
     id: string;

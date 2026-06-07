@@ -1,7 +1,7 @@
 <template>
   <Toast position="top-center" :base-z-index="1"/>
   <!-- редактирование профиля -->
-  <Dialog :visible="visibleEditProfile" modal :closable="false" :style="{ width: '25rem' }" header="Профиль">
+  <Dialog :visible="visibleEditProfile" modal :closable="false" :style="{ width: '50rem' }" header="Профиль">
     <template #default>
       <div class="wrapper-dialog">
         <div class="wrapper-dialog-avatar">
@@ -9,19 +9,38 @@
           <p v-if="uploadImage">изображение выбрано</p>
           <input ref="inputElem" type="file" accept="image/jpg" @change="controlUploadFile"></input>
         </div>
+        <div class="wrapper-dialog-profile-button">
+          <Button severity="secondary" label="Изменить email" @click="visibleEditEmail = true"></Button>
+          <Button severity="secondary" label="Изменить пароль" @click="visibleEditPassword = true"></Button>
+        </div>
         <p>Имя</p>
         <InputText v-model="currentUserFirstName"/>
         <p>Фамилия</p>
-        <InputText v-model="currentUserLastName"/>
-        <!-- <p>Новый email</p>
-        <InputText v-model="currentUserEmail"/>
-        <p>Новый пароль</p>
-        <InputText v-model="currentUserNewPassword"/> -->
+        <InputText v-model="currentUserLastName"/> 
       </div>
     </template>
     <template #footer>
       <Button severity="secondary" label="Отменить" @click="resolvePromise?.('Отменить')"></Button>
       <Button label="Сохранить" @click="resolvePromise?.('Сохранить')"></Button>
+    </template>
+  </Dialog>
+  <Dialog :visible="visibleEditEmail" modal :closable="false" header="Введите новый email" :style="{ width: '25rem' }">
+    <template #default>
+      <p>На этот email будет отправлено письмо с подтверждением</p>
+      <InputText v-model="currentUserEmail"/>
+    </template>
+    <template #footer>
+        <Button type="button" label="Нет" severity="secondary" @click="visibleEditEmail = false"></Button>
+        <Button type="button" label="Да" @click="editEmail" :disabled="currentUserEmail.length == 0"></Button>
+    </template>
+  </Dialog>
+  <Dialog :visible="visibleEditPassword" modal :closable="false" header="Введите новый пароль" :style="{ width: '25rem' }">
+    <template #default>
+      <InputText v-model="currentUserNewPassword" placeholder="минимум 6 знаков"/>
+    </template>
+    <template #footer>
+        <Button type="button" label="Нет" severity="secondary" @click="visibleEditPassword = false"></Button>
+        <Button type="button" label="Да" @click="editPassword" :disabled="currentUserNewPassword.length < 6"></Button>
     </template>
   </Dialog>
   <!-- создание таблицы -->
@@ -33,8 +52,8 @@
                 <div class="wrapper-radio">
                     <p>Выберите категорию</p>
                     <label v-for="item in store.tableCategory" :key="item">
-                        <span>{{ item }}</span>
-                        <RadioButton v-model="tableCategory" :inputId="item" name="radio" :value="item" class="radio" :disabled="item === 'Общая'"/>
+                      <span>{{ item }}</span>
+                      <RadioButton v-model="tableCategory" :inputId="item" name="radio" :value="item" class="radio" :disabled="item === 'Общая'"/>
                     </label> 
                 </div>
             </div>
@@ -152,7 +171,7 @@
                 <span>{{ showUserRole() }}</span>
             </div>
     </template>
-    <PanelMenu :model="itemsPanelBar"/>
+    <PanelMenu v-if="store.currentUserData?.role == 'admin'" :model="itemsPanelBar"/>
     <template #footer>
       <Button label="Профиль" icon="pi pi-cog" class="flex-auto" severity="secondary" text @click="editProfile"></Button>
       <Button label="Выйти" icon="pi pi-sign-out" class="flex-auto" severity="danger" text @click="signOut"></Button>
@@ -181,6 +200,8 @@ const visibleCreateTable = ref(false)
 const visibleCreateInstruction = ref(false)
 const visibleCreateSchedule = ref(false)
 const visibleEditProfile = ref(false)
+const visibleEditEmail = ref(false)
+const visibleEditPassword = ref(false)
 const visibleCreateMarker = ref (false)
 const visibleEditMarkers = ref(false)
 const visibleDeleteMarker = ref(false)
@@ -245,6 +266,11 @@ const itemsMenuBar = ref<MenuBar[]>([
           command: clickItemNavBar
         },
       ]
+    },
+    {
+      label: 'Пользователи',
+      icon: 'pi pi-user',
+      command: clickItemNavBar
     },
 ]);
 const itemsPanelBar = ref<PanelBar[]>([
@@ -336,6 +362,9 @@ function clickItemNavBar(event: MenuItemCommandEvent): void {
       break;
     case "Для лекторов":
       router.push({ name: 'instructions_lectors' })
+      break;
+    case "Пользователи":
+      router.push({ name: 'users' })
       break;
   }
 }
@@ -456,13 +485,23 @@ async function editProfile(): Promise<void> {
       currentUserData.value.avatar = currentUserData.value.avatar
     }
     await supabase.from('profiles').update({ first_name: currentUserFirstName.value, last_name: currentUserLastName.value, avatar: currentUserData.value?.avatar }).eq('id', currentUserData.value?.id)
-    // await supabase.auth.updateUser({ password: currentUserNewPassword.value, email: currentUserEmail.value })
     visibleEditProfile.value = false
     uploadImage.value = null
   } else if (response == "Отменить") {
     visibleEditProfile.value = false
     uploadImage.value = null
   }
+}
+async function editEmail() {
+  await supabase.auth.updateUser({email: currentUserEmail.value})
+  // await supabase.auth.updateUser({password: currentUserNewPassword.value})
+  store.showAlert('success', 'Успешно', `Отправлено письмо с подтверждением операции на email - ${currentUserEmail.value}`, 10000)
+  visibleEditEmail.value = false
+}
+async function editPassword() {
+  await supabase.auth.updateUser({password: currentUserNewPassword.value})
+  store.showAlert('success', 'Успешно', `Пароль успешно изменен`, 10000)
+  visibleEditPassword.value = false
 }
 function controlUploadFile(event: Event): void {
   let input = event.target as HTMLInputElement

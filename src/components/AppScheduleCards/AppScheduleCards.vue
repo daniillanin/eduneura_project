@@ -38,7 +38,7 @@
             @shift-card-left="shiftCardLeft">
         </AppCard>
         
-        <div class="newcard" @click="createCard">
+        <div v-if="store.currentUserData?.role == 'admin'" class="newcard" @click="createCard">
             +
         </div>
     </div>

@@ -87,7 +87,10 @@ async function signUp(): Promise<void>{
                 first_name: userFirstName.value,
                 last_name: userLastName.value,
                 avatar: "/avatar_default.jpg",
-                role: 'user'
+                role: 'user',
+                active: true,
+                schedules: null,
+                instructions: null
             }
             await supabase.from("profiles").upsert(newUser).select("*")
         }

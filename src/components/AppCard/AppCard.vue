@@ -1,7 +1,7 @@
 <template>
     <Card class="card">
         <template #header style="height: 200px;">
-            <div class="wrapper-edit">
+            <div v-if="store.currentUserData?.role == 'admin'" class="wrapper-edit">
                 <Button text icon="pi pi-chevron-left" severity="secondary" size="small" @click="shiftCardLeft"></Button>
                 <Button text icon="pi pi-chevron-right" severity="secondary" size="small" @click="shiftCardRight"></Button>
                 <Button text icon="pi pi-pencil edit" severity="secondary" size="small" @click="editCard"></Button>

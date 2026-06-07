@@ -32,7 +32,7 @@
     </Dialog>
     <div class="wrapper-table">
     <div v-if="props.tableID">
-        <div class="wrapper-edit-button">
+        <div v-if="store.currentUserData?.role == 'admin'" class="wrapper-edit-button">
             <div></div> <!-- не удалять, нужен в качестве противовеса выравнивания -->
             <Button text icon="pi pi-plus" severity="secondary" label="столбец" @click="createColumn"></Button>
             <Button text icon="pi pi-plus" severity="secondary" label="строка" @click="createRow" :disabled="!columns || columns.length == 0"></Button>
@@ -46,7 +46,7 @@
             style="min-width: 20rem; white-space: normal; word-break: break-word; vertical-align: top" sortable
             :frozen="index == 0 ? columnFrozen : false">
                 <template #header="{ column }">
-                    <div class="wrapper-edit-column-button">
+                    <div v-if="store.currentUserData?.role == 'admin'" class="wrapper-edit-column-button">
                         <Button text icon="pi pi-chevron-left" severity="secondary" size="small" id="left" :disabled="index == 0" @click="shiftColumn($event, index)"></Button>
                         <Button text icon="pi pi-chevron-right" severity="secondary" size="small" id="right" @click="shiftColumn($event, index)"></Button>
                         <Button text icon="pi pi-pencil" severity="secondary" size="small" @click="editNameColumn(index)"></Button>
@@ -63,7 +63,7 @@
             </Column>
             <Column v-if="rows" style="width: 30px">
                 <template #body="{ index }">
-                    <Button text icon="pi pi-times" severity="secondary" size="small" @click="deleteRow(index)"></Button>
+                    <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-times" severity="secondary" size="small" @click="deleteRow(index)"></Button>
                 </template>
             </Column>
         </DataTable>

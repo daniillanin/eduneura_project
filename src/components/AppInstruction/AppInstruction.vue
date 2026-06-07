@@ -18,13 +18,14 @@
         </template>
     </Dialog>
     <div v-if="props.instructionID">
-        <div class="wrapper-edit-button">
+        <div v-if="store.currentUserData?.role == 'admin'" class="wrapper-edit-button">
             <Button text icon="pi pi-save" label="Сохранить изменения" severity="secondary" @click="safeEditContent"></Button>
             <Button text icon="pi pi-cog" severity="secondary" @click="editInstruction"></Button>
         </div>
-        <AppEditor :editContent="editContent" @emit-content="updateEditContent"></AppEditor>
-        <!-- в будущем контент для читателей -->
-        <!-- <div v-html="editContent"></div> -->
+        <!-- контент для редакторов -->
+        <AppEditor v-if="store.currentUserData?.role == 'admin'" :editContent="editContent" @emit-content="updateEditContent"></AppEditor>
+        <!-- контент для читателей -->
+        <div v-else v-html="editContent"></div>
     </div>
 </template>
 

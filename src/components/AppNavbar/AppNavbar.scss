@@ -8,6 +8,7 @@
     margin-bottom: 20px;
     justify-content: center;
     border: none !important;
+    z-index: 1;
 }
 .p-menubar-end {
     button {
@@ -32,6 +33,14 @@
 .p-colorpicker {
     margin: auto 0px;
     margin-left: 10px;
+}
+.p-drawer {
+    border-radius: 20px 0px 0px 20px;
+}
+.p-drawer-footer {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
 }
 .wrapper-radio {
     display: flex;
@@ -78,6 +87,12 @@
         flex-flow: row nowrap;
         margin: 5px 0;
     }  
+}
+.wrapper-dialog-profile-button {
+    margin-top: 16px;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-evenly;
 }
 .wrapper-color {
     display: flex;

@@ -17,7 +17,7 @@
             <Button label="Сохранить" @click="resolvePromise?.('Сохранить')"></Button>
         </template>
     </Dialog>
-    <Select v-model="selectedSchedule" :options="schedules" filter optionLabel="name" placeholder="Выберите расписание" style="width: 500px">
+    <Select v-model="selectedSchedule" :options="filterSchedules()" filter optionLabel="name" placeholder="Выберите расписание" style="width: 500px">
         <template #value="slotProps">
             <div v-if="slotProps.value" class="flex items-center">
                 <div>{{ slotProps.value.name }}</div>
@@ -29,11 +29,11 @@
     </Select>
     <div v-if="selectedSchedule">
         <div class="wrapper-edit-button">
-            <div></div> <!-- не удалять, нужен в качестве противовеса выравнивания -->
+            <div :hidden="store.currentUserData?.role != 'admin'"></div> <!-- не удалять, нужен в качестве противовеса выравнивания -->
             <Button text icon="pi pi-bars" severity="secondary" @click="router.push({name: 'lists'})"></Button>
             <span style="border-left: 1px solid black"></span>
             <Button text icon="pi pi-th-large" severity="secondary" @click="router.push({name: 'cards'})"></Button>
-            <Button text icon="pi pi-cog" severity="secondary" @click="editSchedule"></Button>
+            <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-cog" severity="secondary" @click="editSchedule"></Button>
         </div>
         <RouterView v-slot="{ Component }">
             <component :is="Component" :scheduleID="selectedSchedule?.id"></component>
@@ -46,8 +46,7 @@ import { ref, onMounted, provide, watch } from 'vue';
 import { useRouter, useRoute, RouterView } from 'vue-router';
 import { useMainStore } from '@/stores/mainStore';
 import { supabase } from '@/database/supabase';
-import type { Marker } from '@/types/interfaces';
-import type { Schedule } from '@/types/interfaces';
+import type { Marker, User, Schedule } from '@/types/interfaces';
 import { Select, Button, Dialog, InputText } from 'primevue';
 
 const route = useRoute()
@@ -57,12 +56,17 @@ const store = useMainStore()
 const visibleEditSchedule = ref(false)
 const markers = ref<Marker[]>([])
 const schedules = ref<Schedule[]>([])
+// const users = ref<User[] | null>(null)
 const selectedSchedule = ref<Schedule>()
 const scheduleName = ref("")
 const resolvePromise = ref<(value: string) => void>()
 
 provide("markers", markers)
 
+function filterSchedules(): Schedule[] {
+    let user_schedules = schedules.value.filter(item => store.currentUserData?.schedules?.includes(item.id))
+    return user_schedules
+}
 async function editSchedule(): Promise<void> {
     visibleEditSchedule.value = true
     let index = schedules.value.findIndex(item => item.id == selectedSchedule.value?.id)
@@ -82,10 +86,12 @@ watch(selectedSchedule, () => {
     router.push({name: 'lists'})
 })
 onMounted(async () => {
-    let { data } = await supabase.from("schedules").select("*").eq("category", "Общая")
-    data ? schedules.value = data : []
+    const data_schedules = await supabase.from("schedules").select("*").eq("category", "Общая")
+    data_schedules.data ? schedules.value = data_schedules.data : []
     const markers_response = await supabase.from("schedule_cards_markers").select("*")
     markers_response.data ? markers.value = markers_response.data : []
+    // const data_profiles = await supabase.from("profiles").select("*")
+    // users.value = data_profiles.data
 })
 </script>
 

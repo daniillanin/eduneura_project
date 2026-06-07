@@ -17,7 +17,7 @@
         <template #header>
             {{ item.title }}
         </template>
-        <template #icons>
+        <template #icons v-if="store.currentUserData?.role == 'admin'">
             <Button text icon="pi pi-chevron-up" severity="secondary" id="up" :disabled="index == 0" @click="shiftLesson($event, index)"></Button>
             <Button text icon="pi pi-chevron-down" severity="secondary" id="down" @click="shiftLesson($event, index)"></Button>
             <Button text icon="pi pi-pencil" severity="secondary" @click="editLesson(index)"></Button>
@@ -27,9 +27,7 @@
         <!-- <template #footer>    
         </template> -->
     </Panel>
-    <div @click="createLesson">
-            +
-        </div>
+    <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-plus" severity="secondary" label="добавить пункт" @click="createLesson"></Button>
 </template>
 
 <script setup lang="ts">
