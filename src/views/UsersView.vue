@@ -48,8 +48,8 @@
             </template>
         </Column>
         <Column field="quantity" header="Активен" sortable>
-            <template #body="{ data }">
-                <ToggleSwitch v-model="data.active" />
+            <template #body="{ data, index }">
+                <ToggleSwitch v-model="data.active" @change="updateUserActive(data, index)"/>
             </template>
         </Column>
     </DataTable>
@@ -97,6 +97,11 @@ async function editUserInstructions(data: User): Promise<void> {
         await supabase.from("profiles").update({ instructions: selectedInstructions.value}).eq('id', data.id)
     } else if (response == "Отменить") {
         visibleInstructions.value = false
+    }
+}
+async function updateUserActive(data: User, index: number): Promise<void> {
+    if (users.value) {
+        await supabase.from("profiles").update({ active: users.value[index]?.active}).eq('id', data.id)
     }
 }
 onBeforeMount(async() => {
