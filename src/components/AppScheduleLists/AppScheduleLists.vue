@@ -13,6 +13,7 @@
             <Button label="Сохранить" severity="primary" @click="resolvePromise?.('Сохранить')"></Button>
         </div>
     </Dialog>
+    <div class="wrapper-panel">
     <Panel v-for="(item, index) in lessons" :key="item.id" toggleable :collapsed="true">
         <template #header>
             {{ item.title }}
@@ -24,10 +25,11 @@
             <Button text icon="pi pi-times" severity="secondary" @click="deleteLesson(index)"></Button>
         </template>
         <div v-html="item.content_list "></div>
-        <!-- <template #footer>    
+        <!-- <template #footer>
         </template> -->
     </Panel>
-    <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-plus" severity="secondary" label="добавить пункт" @click="createLesson"></Button>
+    <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-plus" severity="secondary" @click="createLesson"></Button>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -72,7 +74,7 @@ async function editLesson(index: number): Promise<void>{
         resolvePromise.value = resolve
     })
     if (response == "Сохранить") {
-        if (lessons.value[index]) { //проверка на undefined для TS
+        if (lessons.value[index]) {
             lessons.value[index].title = mEditTitle.value!
             lessons.value[index].content_list = mEditContent.value!
             isModalOpen.value = false

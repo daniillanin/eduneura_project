@@ -3,12 +3,22 @@
     border: 1px solid lightgrey;
     border-radius: 5px;
 }
-.p-panel {
-    margin-bottom: 10px;
-    background-color: rgb(240, 239, 239);
-}
 h4 {
     margin-bottom: 10px;
+}
+.p-panel {
+    margin-bottom: 10px;
+    border-radius: 12px;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px;
+}
+.wrapper-panel {
+    display: flex;
+    flex-flow: column nowrap;
+    button:last-of-type {
+        margin: 0 auto;
+        border-radius: 12px;
+        background-color: rgb(227, 227, 227);
+    }
 }
 .wrapper-card {
     display: flex;

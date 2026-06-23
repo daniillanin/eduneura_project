@@ -81,26 +81,33 @@ async function signUp(): Promise<void>{
     })
     if (!error) {
         let currentUser = await supabase.auth.getUser();
-        if (currentUser.data.user) {
-            let newUser: User = {
-                id: currentUser.data.user.id,
-                first_name: userFirstName.value,
-                last_name: userLastName.value,
-                avatar: "/avatar_default.jpg",
-                role: 'user',
-                active: true,
-                schedules: null,
-                instructions: null
-            }
-            await supabase.from("profiles").upsert(newUser).select("*")
+        let newUser: User = {
+            id: currentUser.data.user!.id,
+            first_name: userFirstName.value,
+            last_name: userLastName.value,
+            avatar: "/avatar_default.jpg",
+            role: 'user',
+            active: false,
+            schedules: null,
+            instructions: null
         }
-        store.showAlert('success', 'Успешно' ,'Пользователь зарегистрирован', 5000)
-        const { data } = await supabase.auth.getUser()
-        const user = await supabase.from("profiles").select('*').eq('id', data.user?.id).single()
-        store.currentUserData = user.data
-        router.push({ name: 'main' })
+        const user = await supabase.from("profiles").upsert(newUser).select("*")
+        if (!user.error) {
+            store.showAlert('success', 'Успешно' ,'Пользователь зарегистрирован', 5000)
+        } else {
+            store.showAlert('error', 'Ошибка' ,'Ошибка регистрации, повторите попытку позднее', 5000)
+        }
+        const { data } = await supabase.from("profiles").select('*').eq('id', currentUser.data.user?.id).single()
+        store.currentUserData = data
+        if (!store.currentUserData?.active) {
+            store.showAlert('warn', 'Доступ ограничен', 'Для доступа к сервису требуется разрешение администратора', 50000)
+            signOut()
+        } else {
+            store.showAlert('success', 'Успешно' ,'Успешный вход', 5000)
+            router.push({ name: 'main' })
+        }
     } else {
-        store.showAlert('error', 'Ошибка' ,'Неверный формат email или пароль ', 5000)
+        store.showAlert('error', 'Ошибка' ,'Неверный формат email или пароль', 5000)
     }
 }
 async function signIn(): Promise<void> {
@@ -109,11 +116,16 @@ async function signIn(): Promise<void> {
         password: userPassword.value,
     })
     if (!error) {
-        store.showAlert('success', 'Успешно' ,'Успешный вход', 5000)
-        const { data } = await supabase.auth.getUser()
-        const user = await supabase.from("profiles").select('*').eq('id', data.user?.id).single()
+        let localUserData = await JSON.parse(localStorage.getItem("sb-ybydluillbwvivnlvgqo-auth-token")!)
+        const user = await supabase.from("profiles").select('*').eq('id', localUserData.user.id).single()
         store.currentUserData = user.data
-        router.push({ name: 'main' })
+        if (!store.currentUserData?.active) {
+            store.showAlert('warn', 'Доступ ограничен', 'Для доступа к сервису обратитесь к администратору', 50000)
+            signOut()
+        } else {
+            store.showAlert('success', 'Успешно' ,'Успешный вход', 5000)
+            router.push({ name: 'main' })
+        }
     } else {
         store.showAlert('error', 'Ошибка' ,'Неверный логин или пароль', 5000)
     }
@@ -129,6 +141,11 @@ async function resetPassword(): Promise<void> {
         store.showAlert('error', 'Ошибка' ,'Сервис временно недоступен. Попробуйте позже', 5000)
     }
 }
+async function signOut(): Promise<void>{
+    await supabase.auth.signOut()
+    router.push({ name: "login" })
+    store.currentUserData = null
+} 
 </script>
 
 <style scoped lang="scss">

@@ -494,7 +494,6 @@ async function editProfile(): Promise<void> {
 }
 async function editEmail() {
   await supabase.auth.updateUser({email: currentUserEmail.value})
-  // await supabase.auth.updateUser({password: currentUserNewPassword.value})
   store.showAlert('success', 'Успешно', `Отправлено письмо с подтверждением операции на email - ${currentUserEmail.value}`, 10000)
   visibleEditEmail.value = false
 }

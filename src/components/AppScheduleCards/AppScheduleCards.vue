@@ -37,10 +37,7 @@
             @shift-card-right="shiftCardRight"
             @shift-card-left="shiftCardLeft">
         </AppCard>
-        
-        <div v-if="store.currentUserData?.role == 'admin'" class="newcard" @click="createCard">
-            +
-        </div>
+        <Button v-if="store.currentUserData?.role == 'admin'" class="newcard" text icon="pi pi-plus" severity="secondary" @click="createCard"></Button>
     </div>
 </template>
 

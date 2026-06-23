@@ -33,18 +33,18 @@
         <Column field="role" header="Роль" sortable></Column>
         <Column field="schedules" header="Расписания" sortable>
             <template #body="{ data }">
-                <p v-for="item in data.schedules">
+                <!-- <p v-for="item in data.schedules">
                     {{ schedules?.find(schedules_item => schedules_item.id == item)?.name }}
-                </p>
-                <Button text icon="pi pi-pencil" severity="secondary" size="small" @click="editUserSchedules(data)"></Button>
+                </p> -->
+                <Button text icon="pi pi-eye" severity="secondary" @click="editUserSchedules(data)"></Button>
             </template>
         </Column>
         <Column field="instructions" header="Инструкции" sortable>
             <template #body="{ data }">
-                <p v-for="item in data.instructions">
+                <!-- <p v-for="item in data.instructions">
                     {{ instructions?.find(instructions_item => instructions_item.id == item)?.name }}
-                </p>
-                <Button text icon="pi pi-pencil" severity="secondary" size="small" @click="editUserInstructions(data)"></Button>
+                </p> -->
+                <Button text icon="pi pi-eye" severity="secondary" @click="editUserInstructions(data)"></Button>
             </template>
         </Column>
         <Column field="quantity" header="Активен" sortable>
@@ -52,17 +52,18 @@
                 <ToggleSwitch v-model="data.active" @change="updateUserActive(data, index)"/>
             </template>
         </Column>
+        <Column field="id" header="ID" sortable></Column>
     </DataTable>
 </template>
 
 <script setup lang="ts">
 import { ref, onBeforeMount, watch } from 'vue'
-// import { useMainStore } from '@/stores/mainStore'
+import { useMainStore } from '@/stores/mainStore'
 import { supabase } from '@/database/supabase'
 import type { User, Schedule, Instruction } from '@/types/interfaces'
 import { DataTable, Column, ToggleSwitch, Button, Dialog, Checkbox } from 'primevue'
 
-// const store = useMainStore()
+const store = useMainStore()
 
 const visibleSchedules = ref(false)
 const visibleInstructions = ref(false)

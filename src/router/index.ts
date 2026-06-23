@@ -127,24 +127,30 @@ router.beforeEach(async (to, from) => {
   let requireAuth = to.matched.some(item => item.meta.isRequireAuth)
   let requireAdmin = to.matched.some(item => item.meta.isRequireAdmin)
 
-  if (!localUserData) {   //если в localStorage нет данных пользователя значит сессия НЕ активна и пользователь аноним
-    if (requireAuth) {    //если страница требует аутентификации
+  if (!localUserData) { //если в localStorage нет данных пользователя значит сессия не активна и пользователь не авторизован
+    if (requireAuth) {    
       return "/login"
     } else {
-      return true         //true разрешает переход, false запрещает переход
+      return true         
     }
   } else {
-    if (!store.currentUserData) {
+    if (!store.currentUserData) { //перезапись store.currentUserData в случае непреднамеренной очистки RAM браузера
       const user = await supabase.from("profiles").select('*').eq('id', localUserData.user.id).single()
       store.currentUserData = user.data
+    }
+    //логика для авторизованных пользователей
+    if (to.name == "login") {
+      return { name: from.name }
+    }
+    if (to.name == "resetpassword") {
+      return { name: from.name }
+    }
+    if (requireAdmin && store.currentUserData?.role === "admin") {
+      return true
+    } else if (requireAdmin && store.currentUserData?.role !== "admin") {
+      return false
     } else {
-       if (requireAdmin && store.currentUserData?.role === "admin") {
-        return true
-      } else if (requireAdmin && store.currentUserData?.role !== "admin") {
-        return false
-      } else {
-        return true
-      }
+      return true
     }
   } 
 })
