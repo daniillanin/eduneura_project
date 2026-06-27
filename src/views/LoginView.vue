@@ -104,7 +104,7 @@ async function signUp(): Promise<void>{
             signOut()
         } else {
             store.showAlert('success', 'Успешно' ,'Успешный вход', 5000)
-            router.push({ name: 'main' })
+            router.push({ name: 'home' })
         }
     } else {
         store.showAlert('error', 'Ошибка' ,'Неверный формат email или пароль', 5000)
@@ -124,7 +124,7 @@ async function signIn(): Promise<void> {
             signOut()
         } else {
             store.showAlert('success', 'Успешно' ,'Успешный вход', 5000)
-            router.push({ name: 'main' })
+            router.push({ name: 'home' })
         }
     } else {
         store.showAlert('error', 'Ошибка' ,'Неверный логин или пароль', 5000)

@@ -148,7 +148,7 @@
     </Dialog>
   <Menubar :model="itemsMenuBar">
     <template #start>
-      <img src="/eduneura_logo.png" width="140px" @click="router.push({name: 'main'})">
+      <img src="/eduneura_logo.png" width="140px" @click="router.push({name: 'home'})">
     </template>
     <template #end>
         <button @click="visible = !visible">

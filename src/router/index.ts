@@ -16,6 +16,15 @@ const router = createRouter({
       component: HomeView,
       children: [
         {
+          path: 'home',
+          name: 'home',
+          meta: {
+            isRequireAuth: true,
+            isRequireAdmin: false
+          },
+          component: () => import('../views/StartView.vue')
+        },
+        {
           path: 'schedule',
           name: 'schedule',
           meta: {
