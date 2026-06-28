@@ -10,6 +10,7 @@
         </template>
     </Select>
     <AppTable :tableID="selectedTable?.id"></AppTable>
+    <AppNoData v-if="selectedTable == null"></AppNoData>
 </template>
 
 <script setup lang="ts">
@@ -18,9 +19,10 @@ import { supabase } from "@/database/supabase";
 import type { TableMeta } from "@/types/interfaces";
 import AppTable from '@/components/AppTable/AppTable.vue';
 import { Select } from 'primevue';
+import AppNoData from '@/components/AppNoData/AppNoData.vue';
 
 const tables = ref<TableMeta[]>([]);
-const selectedTable = ref<TableMeta>();
+const selectedTable = ref<TableMeta | null>(null);
 
 onMounted(async () => {
     let { data } = await supabase.from("tables_meta").select("*").eq("category", "График лекторов")

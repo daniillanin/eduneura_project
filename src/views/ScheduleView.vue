@@ -39,6 +39,7 @@
             <component :is="Component" :scheduleID="selectedSchedule?.id"></component>
         </RouterView>
     </div>
+    <AppNoData v-else></AppNoData>
 </template>
 
 <script setup lang="ts">
@@ -48,6 +49,7 @@ import { useMainStore } from '@/stores/mainStore';
 import { supabase } from '@/database/supabase';
 import type { Marker, User, Schedule } from '@/types/interfaces';
 import { Select, Button, Dialog, InputText } from 'primevue';
+import AppNoData from '@/components/AppNoData/AppNoData.vue';
 
 const route = useRoute()
 const router = useRouter()
@@ -57,7 +59,7 @@ const visibleEditSchedule = ref(false)
 const markers = ref<Marker[]>([])
 const schedules = ref<Schedule[]>([])
 // const users = ref<User[] | null>(null)
-const selectedSchedule = ref<Schedule>()
+const selectedSchedule = ref<Schedule | null>(null)
 const scheduleName = ref("")
 const resolvePromise = ref<(value: string) => void>()
 

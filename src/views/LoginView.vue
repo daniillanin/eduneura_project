@@ -198,6 +198,9 @@ label {
     transition-property: box-shadow;
     transition-duration: 3s;
     transition-timing-function: ease-in-out;
+    &:hover {
+        box-shadow: 0px 0px 25px rgb(96, 165, 250);
+    }
 }
 .form {
     display: flex;
@@ -219,9 +222,6 @@ input{
 .btn-login{
     margin: 10px 0px;
     background-color: rgb(96, 165, 250);
-}
-#loginForm:hover {
-    box-shadow: 0px 0px 25px rgb(96, 165, 250);
 }
 .p-inputwrapper {
     display: grid;

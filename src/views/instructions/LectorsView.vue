@@ -10,6 +10,7 @@
         </template>
     </Select>
     <AppInstruction :instructionID="selectedInstruction?.id"></AppInstruction>
+    <AppNoData v-if="selectedInstruction == null"></AppNoData>
 </template>
 
 <script setup lang="ts">
@@ -18,9 +19,10 @@ import { supabase } from "@/database/supabase";
 import type { Instruction } from "@/types/interfaces";
 import AppInstruction from "@/components/AppInstruction/AppInstruction.vue";
 import { Select } from 'primevue';
+import AppNoData from '@/components/AppNoData/AppNoData.vue';
 
 const instructions = ref<Instruction[]>([]);
-const selectedInstruction = ref<Instruction>();
+const selectedInstruction = ref<Instruction | null>(null);
 
 onMounted(async () => {
     let { data } = await supabase.from("instructions").select("*").eq("category", "Для лекторов")
