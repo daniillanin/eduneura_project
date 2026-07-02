@@ -61,3 +61,10 @@ export interface Marker {
     title: string;
     color: string
 }
+export interface startCards {
+    id: number;
+    title: string;
+    content: string;
+    image: string;
+    routeName: string;
+}
