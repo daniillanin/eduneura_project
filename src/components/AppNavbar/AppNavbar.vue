@@ -146,7 +146,7 @@
             <Button type="button" label="Да" @click="resolvePromiseConfirm?.('Да')"></Button>
         </template>
     </Dialog>
-  <Menubar :model="itemsMenuBar">
+  <Menubar :model="store.currentUserData?.role == 'admin' ? itemsMenuBarAdmin : itemsMenuBarUser">
     <template #start>
       <img src="/eduneura_logo.png" width="140px" @click="router.push({name: 'home'})">
     </template>
@@ -224,7 +224,7 @@ const inputElem = ref<HTMLInputElement>()
 const uploadImage = ref<File | null>(null)
 const markers = ref<Marker[] | null>(null)
 
-const itemsMenuBar = ref<MenuBar[]>([
+const itemsMenuBarAdmin = ref<MenuBar[]>([
   {
       label: 'Графики',
       icon: 'pi pi-calendar',
@@ -272,7 +272,25 @@ const itemsMenuBar = ref<MenuBar[]>([
       icon: 'pi pi-user',
       command: clickItemNavBar
     },
-]);
+])
+const itemsMenuBarUser = ref<MenuBar[]>([
+    {
+      label: 'Расписание',
+      icon: 'pi pi-clipboard',
+      command: clickItemNavBar
+    },
+    {
+      label: 'Инструкции',
+      icon: 'pi pi-book',
+      items: [
+        {
+          label: 'Для студентов',
+          icon: 'pi pi-graduation-cap',
+          command: clickItemNavBar
+        },
+      ]
+    }
+])
 const itemsPanelBar = ref<PanelBar[]>([
   {
     label: 'Таблицы',
