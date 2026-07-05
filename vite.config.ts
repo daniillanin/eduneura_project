@@ -17,5 +17,12 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    proxy: {
+      '/mws-api': {
+        target: 'https://gpt.mwsapis.ru',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/mws-api/, '') //удаляется из URL часть адреса mws-api-org/ при отправкке запроса 
+      }
+    },
   },
 })

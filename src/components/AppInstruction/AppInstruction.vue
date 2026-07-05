@@ -19,6 +19,7 @@
     </Dialog>
     <div v-if="props.instructionID">
         <div v-if="store.currentUserData?.role == 'admin'" class="wrapper-edit-button">
+            <Button label="AI" @click="ai"></Button>
             <Button text icon="pi pi-save" label="Сохранить изменения" severity="secondary" @click="safeEditContent"></Button>
             <Button text icon="pi pi-cog" severity="secondary" @click="editInstruction"></Button>
         </div>
@@ -46,10 +47,15 @@ const instructionCategory = ref("")
 const resolvePromise = ref<(value: string) => void>()
 
 function updateEditContent(updateContent: string): void {
-  editContent.value = updateContent
+    editContent.value = updateContent
 }
 async function safeEditContent() :Promise<void> {
-    await supabase.from('instructions').update({ name: instructionName.value, category: instructionCategory.value, content: editContent.value }).eq('id', props.instructionID)
+    const {data, error} = await supabase.from('instructions').update({ name: instructionName.value, category: instructionCategory.value, content: editContent.value }).eq('id', props.instructionID)
+    if (!error) {
+        store.showAlert('success', 'Успешно', 'Изменения сохранены', 3000)
+    } else {
+        store.showAlert('error', 'Ошибка', 'попробуйте повторить попытку позже или обратиться к администратору', 3000)
+    }
 }
 async function editInstruction() :Promise<void> {
     visibleEditInstruction.value = true
@@ -63,6 +69,30 @@ async function editInstruction() :Promise<void> {
         visibleEditInstruction.value = false
     }
 }
+async function ai() :Promise<void> {
+    const prompt = `Ты профессиональный учитель в крупной компании. Твоя задача обучить стажера который совсем недавно трудоустроился, только получает знания и наращивает экспертизу.
+                    Перефразируй инструкцию в более понятном стиле с обязательным сохранением важных ключевых деталей и сократи ее объем в два раза от исходного.
+                    Данные: ${editContent.value}.
+                    Ответ должен быть в формате HTML не используя теги <html>, <body>, <script>.`
+    let response = await fetch("/mws-api/projects/eduneura/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_MWS_API_KEY}`
+        },
+        body: JSON.stringify({
+            model: import.meta.env.VITE_MWS_AI_MODEL,
+            messages: [{ role: "user", content: prompt }],
+            // max_completion_tokens: 4000
+        }
+        )
+    })
+    let data = await response.json()
+    let doneText = data.choices[0].message.content
+    console.log(doneText);
+    console.log(`В деньгах: ${data.usage.total_tokens * (1.22/1000)}`);
+    
+}
 watch(() => props.instructionID, async (instructionID_actual) => {
     const instructions = await supabase.from("instructions").select("*").eq("id", instructionID_actual).single()
     instructionName.value = instructions.data.name
@@ -72,5 +102,5 @@ watch(() => props.instructionID, async (instructionID_actual) => {
 </script>
 
 <style scoped lang="scss">
- @use "./AppInstruction.scss"
+ @use "./AppInstruction.scss";
 </style>
