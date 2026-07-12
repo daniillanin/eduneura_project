@@ -6,7 +6,18 @@
         width: 120px;
         margin-right: auto;
     }
-    button:nth-last-child(3) {
+    button:nth-last-child(4) {
         margin-right: auto;
     }
+    .ai-button {
+        &:hover {
+            background-image: url("/gradient.png") !important;
+            background-size: 100% !important;
+            background-repeat: no-repeat !important;
+            background-position: center center !important;
+        }   
+    }
+}
+.wrapper-edit-content {
+    margin: 0px 30px;
 }

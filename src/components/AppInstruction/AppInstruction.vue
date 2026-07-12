@@ -1,4 +1,13 @@
 <template>
+    <!-- ai контент -->
+    <Dialog :visible="visibleAiContent" modal :closable="false" :style="{ width: '75rem' }" header="Перефраз">
+        <template #default>
+            <div v-html="aiContent"></div>
+        </template>
+        <template #footer>
+            <Button severity="secondary" label="Закрыть" @click="visibleAiContent = false"></Button>
+        </template>
+    </Dialog>
     <!-- изменение инструкции -->
     <Dialog :visible="visibleEditInstruction" modal :closable="false" :style="{ width: '25rem' }" header="Инструкция">
         <template #default>
@@ -18,15 +27,17 @@
         </template>
     </Dialog>
     <div v-if="props.instructionID">
-        <div v-if="store.currentUserData?.role == 'admin'" class="wrapper-edit-button">
-            <Button label="AI" @click="ai"></Button>
-            <Button text icon="pi pi-save" label="Сохранить изменения" severity="secondary" @click="safeEditContent"></Button>
-            <Button text icon="pi pi-cog" severity="secondary" @click="editInstruction"></Button>
+        <div class="wrapper-edit-button">
+            <Button text icon="pi pi-sparkles" label="Перефраз" severity="secondary" @click="ai" class="ai-button" :loading="aiLoading"></Button>
+            <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-save" label="Сохранить изменения" severity="secondary" @click="safeEditContent"></Button>
+            <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-cog" severity="secondary" @click="editInstruction"></Button>
         </div>
-        <!-- контент для редакторов -->
-        <AppEditor v-if="store.currentUserData?.role == 'admin'" :editContent="editContent" @emit-content="updateEditContent"></AppEditor>
-        <!-- контент для читателей -->
-        <div v-else v-html="editContent"></div>
+        <div class="wrapper-edit-content">
+            <!-- контент для редакторов -->
+            <AppEditor v-if="store.currentUserData?.role == 'admin'" :editContent="editContent" @emit-content="updateEditContent"></AppEditor>
+            <!-- контент для читателей -->
+            <div v-else v-html="editContent"></div>
+        </div>
     </div>
 </template>
 
@@ -41,7 +52,10 @@ const store = useMainStore()
 const props = defineProps(["instructionID"])
 
 const visibleEditInstruction = ref(false)
+const visibleAiContent = ref(false)
 const editContent = ref("")
+const aiContent = ref("")
+const aiLoading = ref(false)
 const instructionName = ref("")
 const instructionCategory = ref("")
 const resolvePromise = ref<(value: string) => void>()
@@ -70,8 +84,9 @@ async function editInstruction() :Promise<void> {
     }
 }
 async function ai() :Promise<void> {
+    aiLoading.value = true
     const prompt = `Ты профессиональный учитель в крупной компании. Твоя задача обучить стажера который совсем недавно трудоустроился, только получает знания и наращивает экспертизу.
-                    Перефразируй инструкцию в более понятном стиле с обязательным сохранением важных ключевых деталей и сократи ее объем в два раза от исходного.
+                    Перефразируй инструкцию в более понятном для нового сотрудника стиле с обязательным сохранением важных ключевых деталей и сократи ее объем от исходного таким образом чтобы она выглядела как краткий пересказ.
                     Данные: ${editContent.value}.
                     Ответ должен быть в формате HTML не используя теги <html>, <body>, <script>.`
     let response = await fetch("/mws-api/projects/eduneura/openai/v1/chat/completions", {
@@ -87,11 +102,19 @@ async function ai() :Promise<void> {
         }
         )
     })
-    let data = await response.json()
-    let doneText = data.choices[0].message.content
-    console.log(doneText);
-    console.log(`В деньгах: ${data.usage.total_tokens * (1.22/1000)}`);
-    
+    try {
+        let data = await response.json()
+        let doneText = data.choices[0].message.content
+        aiContent.value = doneText
+        console.log(doneText)
+        console.log(`В деньгах: ${data.usage.total_tokens * (1.22/1000)}`)
+        visibleAiContent.value = true
+        aiLoading.value = false
+    } catch(error) {
+        store.showAlert("error", "Упс!", "Что-то пошло не так, попробуйте повторить запрос", 10000)
+        visibleAiContent.value = false
+        aiLoading.value = false
+    } 
 }
 watch(() => props.instructionID, async (instructionID_actual) => {
     const instructions = await supabase.from("instructions").select("*").eq("id", instructionID_actual).single()
