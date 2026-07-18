@@ -28,7 +28,7 @@
     </Dialog>
     <div v-if="props.instructionID">
         <div class="wrapper-edit-button">
-            <Button text icon="pi pi-sparkles" label="Перефраз" severity="secondary" @click="ai" class="ai-button" :loading="aiLoading"></Button>
+            <Button text icon="pi pi-sparkles" label="Перефразировать инструкцию" severity="secondary" @click="ai" class="ai-button" :loading="aiLoading"></Button>
             <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-save" label="Сохранить изменения" severity="secondary" @click="safeEditContent"></Button>
             <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-cog" severity="secondary" @click="editInstruction"></Button>
         </div>
@@ -85,8 +85,8 @@ async function editInstruction() :Promise<void> {
 }
 async function ai() :Promise<void> {
     aiLoading.value = true
-    const prompt = `Ты профессиональный учитель в крупной компании. Твоя задача обучить стажера который совсем недавно трудоустроился, только получает знания и наращивает экспертизу.
-                    Перефразируй инструкцию в более понятном для нового сотрудника стиле с обязательным сохранением важных ключевых деталей и сократи ее объем от исходного таким образом чтобы она выглядела как краткий пересказ.
+    const prompt = `Ты профессиональный учитель в крупной компании. Твоя задача - обучить стажера который совсем недавно трудоустроился, только получает знания и наращивает экспертизу.
+                    Перефразируй инструкцию в более понятном для нового сотрудника стиле, но без явного упоминания что эта инструкция для стажера, с обязательным сохранением важных ключевых деталей и сократи ее объем от исходного таким образом чтобы она выглядела как краткий пересказ, но без явного упоминания что это пересказ или перефразирование.
                     Данные: ${editContent.value}.
                     Ответ должен быть в формате HTML не используя теги <html>, <body>, <script>.`
     let response = await fetch("/mws-api/projects/eduneura/openai/v1/chat/completions", {
