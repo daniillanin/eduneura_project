@@ -45,6 +45,9 @@
       <button @click="editor.chain().focus().setParagraph().run()" :class="{ 'is-active': editor.isActive('paragraph') }">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M413.85-203.08V-440h-7.7q-66.84 0-113.42-46.58-46.58-46.57-46.58-113.42t46.58-113.42Q339.31-760 406.15-760h256.93v40h-80v516.92h-40V-720h-89.23v516.92z"/></svg>
       </button>
+      <button @click="editor.chain().focus().toggleTaskList().run()" :class="{ 'is-active': editor.isActive('taskList') }">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M413.85-203.08V-440h-7.7q-66.84 0-113.42-46.58-46.58-46.57-46.58-113.42t46.58-113.42Q339.31-760 406.15-760h256.93v40h-80v516.92h-40V-720h-89.23v516.92z"/></svg>
+      </button>
 
       <button @click="toggleColor">
         <svg xmlns="http://www.w3.org/2000/svg" class="color" :fill="editor.getAttributes('textStyle').color" viewBox="0 -960 960 960"><path d="M120 0v-138.46h720V0zm129.23-280 211.54-520h38.46l211.54 520h-48.31l-57.69-145.54H352.62L294.46-280zm117.54-184h223.38L482-736h-5.54z"/></svg>
@@ -155,6 +158,8 @@ import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import { TableKit } from '@tiptap/extension-table'
 import { TextStyleKit } from '@tiptap/extension-text-style'
+import { TaskList, TaskItem } from '@tiptap/extension-list'
+
 import TextAlign from '@tiptap/extension-text-align'
 import Image from 'tiptap-extension-resize-image'
 
@@ -178,7 +183,9 @@ const editor = useEditor({
           alwaysPreserveAspectRatio: true,
         }
       }),
-      TextStyleKit
+      TextStyleKit,
+      TaskList,
+      TaskItem
     ]
 })
 
