@@ -102,6 +102,14 @@
       visibility: hidden;
     }
   }
+  ul[data-type="taskList"] {
+    list-style-type: none;
+    li {
+      p {
+        color: black
+      }
+    }
+  }
   @include table;
   &.resize-cursor {
     cursor: ew-resize;
