@@ -16,13 +16,19 @@
         flex-flow: row nowrap;
         background-color: transparent;
         border: none;
+        &:hover {
+            cursor: pointer;
+        }
         .wrapper-text-avatar {
             margin-left: 10px;
             display: flex;
             flex-flow: column nowrap;
             align-items: start;
-            span:first-child {
-                font-weight: bold;
+            span {
+                font-size: 0.9rem;
+                &:first-child {
+                    font-weight: bold;
+                }
             }
         }
     }

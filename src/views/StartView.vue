@@ -78,7 +78,7 @@ const startCardsUser = ref<startCards[]>([
     margin: 10px;
     flex: 0 0 auto;
     justify-content: center;
-    width: 49%;
+    width: 48%;
     box-shadow: none !important;
     transition-property: transform;
     transition-duration: 0.3s;
@@ -86,6 +86,9 @@ const startCardsUser = ref<startCards[]>([
     &:hover {
         transform: scale(1.01);
         cursor: pointer;
+    }
+    .p-card-body {
+        justify-content: center;
     }
 }
 }
@@ -96,7 +99,7 @@ const startCardsUser = ref<startCards[]>([
         margin: auto 0;
         margin-right: auto;
         padding-right: 30px;
-        font-size: larger;
+        font-size: 1.1rem;
     }
     img {
         width: 450px;
