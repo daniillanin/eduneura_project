@@ -73,6 +73,7 @@ const startCardsUser = ref<startCards[]>([
 <style lang="scss">
 .wrapper-cards {
     display: flex;
+    justify-content: center;
     flex-flow: row wrap;
     .p-card {
     margin: 10px;
@@ -102,7 +103,8 @@ const startCardsUser = ref<startCards[]>([
         font-size: 1.1rem;
     }
     img {
-        width: 450px;
+        width: 45%;
+        align-self: center;
     }
 }
 </style>
