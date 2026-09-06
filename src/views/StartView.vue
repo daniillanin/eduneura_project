@@ -91,7 +91,13 @@ const startCardsUser = ref<startCards[]>([
     .p-card-body {
         justify-content: center;
     }
-}
+    @media (max-width:768px) {
+        margin: 10px;
+        flex: 0 0 auto;
+        justify-content: center;
+        width: 100%;
+        }
+    }
 }
 .wrapper-card {
     display: flex;
