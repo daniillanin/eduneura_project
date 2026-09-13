@@ -85,7 +85,7 @@ async function editSchedule(): Promise<void> {
     }
 }
 watch(selectedSchedule, () => {
-    router.push({name: 'lists'})
+    router.push({name: 'cards'})
 })
 onMounted(async () => {
     const data_schedules = await supabase.from("schedules").select("*").eq("category", "Общая")
