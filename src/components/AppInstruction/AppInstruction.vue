@@ -98,7 +98,7 @@ async function ai() :Promise<void> {
         body: JSON.stringify({
             model: import.meta.env.VITE_MWS_AI_MODEL,
             messages: [{ role: "user", content: prompt }],
-            // max_completion_tokens: 4000
+            max_completion_tokens: 4096
         }
         )
     })
@@ -106,8 +106,6 @@ async function ai() :Promise<void> {
         let data = await response.json()
         let doneText = data.choices[0].message.content
         aiContent.value = doneText
-        console.log(doneText)
-        console.log(`В деньгах: ${data.usage.total_tokens * (1.22/1000)}`)
         visibleAiContent.value = true
         aiLoading.value = false
     } catch(error) {
