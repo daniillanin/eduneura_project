@@ -1,14 +1,13 @@
+.p-menubar {
+    justify-content: center;
+    border: none !important;
+    z-index: 1;
+}
 .p-menubar-start {
     margin-right: auto;
     img {
         cursor: pointer;
     }
-}
-.p-menubar {
-    margin-bottom: 20px;
-    justify-content: center;
-    border: none !important;
-    z-index: 1;
 }
 .p-menubar-end {
     button {

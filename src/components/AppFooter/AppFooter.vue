@@ -1,10 +1,23 @@
 <template>
-    <Toolbar>
+    <Toolbar class="main-toolbar">
         <!-- <template #start></template> -->
         <template #center>
-            <p>Разработчик - Ланин Даниил</p>
-            <Button text icon="pi pi-github" severity="secondary" size="large"></Button>
-            <Button text icon="pi pi-at" severity="secondary" size="large"></Button>
+            <!-- <p>developer Ланин Даниил</p> -->
+            <Button as="a"
+                text
+                icon="pi pi-github"
+                severity="secondary"
+                size="large"
+                href="https://github.com/daniillanin"
+                target="_blank"
+            ></Button>
+            <Button as="a"
+                text
+                icon="pi pi-at"
+                severity="secondary"
+                size="large"
+                href="mailto:eduneura@yandex.ru"
+            ></Button>
         </template>
         <!-- <template #end></template> -->
     </Toolbar>
@@ -14,6 +27,6 @@
 import { Toolbar, Button } from 'primevue';
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 @use "./AppFooter.scss";
 </style>

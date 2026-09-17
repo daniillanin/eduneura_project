@@ -1,0 +1,12 @@
+.main-toolbar {
+    --p-toolbar-border-color: transparent;
+    --p-toolbar-padding: 0;
+    border: none;
+    p {
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    a {
+        text-decoration: none;
+    }
+}
