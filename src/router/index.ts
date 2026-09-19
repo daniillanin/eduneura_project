@@ -148,10 +148,13 @@ router.beforeEach(async (to, from) => {
       store.currentUserData = user.data
     }
     //логика для авторизованных пользователей
-    if (to.name == "login") {
+    if (to.name === "main") {
+      return { name: "home" }
+    }
+    if (to.name === "login") {
       return { name: from.name }
     }
-    if (to.name == "resetpassword") {
+    if (to.name === "resetpassword") {
       return { name: from.name }
     }
     if (requireAdmin && store.currentUserData?.role === "admin") {

@@ -135,7 +135,7 @@ async function resetPassword(): Promise<void> {
         redirectTo: 'http://localhost:3000/resetpassword'
     })
     if (!error) {
-        store.showAlert('success', 'Успешно' ,'Ссылка на сброс пароля отправлена на указанный email', 5000)
+        store.showAlert('success', 'Успешно' ,'Ссылка на вход без пароля отправлена на указанный email', 5000)
         visible.value = false
     } else {
         store.showAlert('error', 'Ошибка' ,'Сервис временно недоступен. Попробуйте позже', 5000)
@@ -163,7 +163,7 @@ label {
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
-    margin-bottom: 40px;
+    // margin-bottom: 40px;
 }
 .p-password{
     width: 100%;
@@ -192,15 +192,15 @@ label {
     justify-content: center;
     align-items: center;
     width: 350px;
-    padding: 35px;
-    border-radius: 30px;
-    box-shadow: 0px 0px 35px rgba(70, 71, 71, 0.22);
-    transition-property: box-shadow;
-    transition-duration: 3s;
-    transition-timing-function: ease-in-out;
-    &:hover {
-        box-shadow: 0px 0px 25px rgb(96, 165, 250);
-    }
+    padding: 20px;
+    // border-radius: 30px;
+    // box-shadow: 0px 0px 35px rgba(70, 71, 71, 0.22);
+    // transition-property: box-shadow;
+    // transition-duration: 3s;
+    // transition-timing-function: ease-in-out;
+    // &:hover {
+    //     box-shadow: 0px 0px 25px rgb(96, 165, 250);
+    // }
 }
 .form {
     display: flex;
