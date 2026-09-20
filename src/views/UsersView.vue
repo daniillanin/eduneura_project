@@ -1,5 +1,5 @@
 <template>
-    <Dialog :visible="visibleSchedules" modal :closable="false" :style="{ width: '75rem' }" header="Расписания">
+    <Dialog :visible="visibleSchedules" modal :closable="false" :style="{ width: '50rem' }" header="Расписания">
         <template #default>
             <div class="wrapper-dialog-schedules">
                 <label v-for="item in schedules">
@@ -13,7 +13,7 @@
             <Button label="Сохранить" severity="primary" @click="resolvePromise?.('Сохранить')"></Button>
         </template>
     </Dialog>
-    <Dialog :visible="visibleInstructions" modal :closable="false" :style="{ width: '75rem' }" header="Инструкции">
+    <Dialog :visible="visibleInstructions" modal :closable="false" :style="{ width: '50rem' }" header="Инструкции">
         <template #default>
             <div class="wrapper-dialog-schedules">
                 <label v-for="item in instructions">
@@ -30,7 +30,11 @@
     <DataTable :value="users" tableStyle="min-width: 50rem" stripedRows removableSort scrollable>
         <Column field="last_name" header="Фамилия" sortable></Column>
         <Column field="first_name" header="Имя" sortable></Column>
-        <Column field="role" header="Роль" sortable></Column>
+        <Column field="role" header="Роль" sortable>
+            <template #body=" { data }">
+                {{ data.role === 'user' ? 'Пользователь' : data.role === 'editor' ? 'Редактор' : data.role === 'admin' ? 'Администратор' : null }}
+            </template>
+        </Column>
         <Column field="schedules" header="Расписания" sortable>
             <template #body="{ data }">
                 <!-- <p v-for="item in data.schedules">

@@ -26,10 +26,21 @@
             <Button label="Сохранить" @click="resolvePromise?.('Сохранить')"></Button>
         </template>
     </Dialog>
+    <!-- удаление инструкции -->
+    <Dialog :visible="visibleDeleteInstruction" modal :closable="false" header="Удалить инструкцию?" :style="{ width: '25rem' }">
+        <template #default>
+            <p>Если удалить инструкцию, то ее будет невозможно восстановить. Все равно удалить?</p>
+        </template>
+        <template #footer>
+            <Button type="button" label="Нет" severity="secondary" @click="resolvePromise?.('Нет')"></Button>
+            <Button type="button" label="Да" @click="resolvePromise?.('Да')"></Button>
+        </template>
+    </Dialog>
     <div v-if="props.instructionID">
         <div class="wrapper-edit-button">
-            <Button text icon="pi pi-sparkles" label="Перефразировать инструкцию" severity="secondary" @click="ai" class="ai-button" :loading="aiLoading"></Button>
-            <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-save" label="Сохранить изменения" severity="secondary" @click="safeEditContent"></Button>
+            <Button text icon="pi pi-sparkles" label="Перефразировать" severity="secondary" @click="ai" class="ai-button" :loading="aiLoading"></Button>
+            <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-save" label="Сохранить" severity="secondary" @click="safeEditContent"></Button>
+            <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-trash" severity="danger" @click="deleteInstruction"></Button>
             <Button v-if="store.currentUserData?.role == 'admin'" text icon="pi pi-cog" severity="secondary" @click="editInstruction"></Button>
         </div>
         <div class="wrapper-edit-content">
@@ -50,8 +61,10 @@ import { Dialog, InputText, RadioButton, Button } from 'primevue';
 
 const store = useMainStore()
 const props = defineProps(["instructionID"])
+const emit = defineEmits(['delete-instruction'])
 
 const visibleEditInstruction = ref(false)
+const visibleDeleteInstruction = ref(false)
 const visibleAiContent = ref(false)
 const editContent = ref("")
 const aiContent = ref("")
@@ -81,6 +94,19 @@ async function editInstruction() :Promise<void> {
         await supabase.from('instructions').update({ name: instructionName.value, category: instructionCategory.value}).eq('id', props.instructionID)
     } else {
         visibleEditInstruction.value = false
+    }
+}
+async function deleteInstruction() :Promise<void> {
+    visibleDeleteInstruction.value = true
+    let response = await new Promise<string>((resolve) => {
+        resolvePromise.value = resolve
+    })
+    if (response == "Да") {
+        visibleDeleteInstruction.value = false
+        await supabase.from('instructions').delete().eq('id', props.instructionID)
+        emit("delete-instruction")
+    } else {
+        visibleDeleteInstruction.value = false
     }
 }
 async function ai() :Promise<void> {
@@ -114,11 +140,13 @@ async function ai() :Promise<void> {
         aiLoading.value = false
     } 
 }
-watch(() => props.instructionID, async (instructionID_actual) => {
-    const instructions = await supabase.from("instructions").select("*").eq("id", instructionID_actual).single()
-    instructionName.value = instructions.data.name
-    instructionCategory.value = instructions.data.category
-    editContent.value = instructions.data.content
+watch(() => props.instructionID, async (instructionID_new_value) => {
+    if (instructionID_new_value) {
+        const instructions = await supabase.from("instructions").select("*").eq("id", instructionID_new_value).single()
+        instructionName.value = instructions.data.name
+        instructionCategory.value = instructions.data.category
+        editContent.value = instructions.data.content
+    }
 })
 </script>
 
