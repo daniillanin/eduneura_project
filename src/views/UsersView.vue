@@ -1,4 +1,5 @@
 <template>
+    <!-- расписания -->
     <Dialog :visible="visibleSchedules" modal :closable="false" :style="{ width: '50rem' }" header="Расписания">
         <template #default>
             <div class="wrapper-dialog-schedules">
@@ -13,6 +14,7 @@
             <Button label="Сохранить" severity="primary" @click="resolvePromise?.('Сохранить')"></Button>
         </template>
     </Dialog>
+    <!-- инструкции -->
     <Dialog :visible="visibleInstructions" modal :closable="false" :style="{ width: '50rem' }" header="Инструкции">
         <template #default>
             <div class="wrapper-dialog-schedules">
@@ -61,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeMount, watch } from 'vue'
+import { ref, onBeforeMount, nextTick } from 'vue'
 import { useMainStore } from '@/stores/mainStore'
 import { supabase } from '@/database/supabase'
 import type { User, Schedule, Instruction } from '@/types/interfaces'
@@ -79,8 +81,10 @@ const selectedInstructions = ref<string[] | null>(null)
 const resolvePromise = ref<(value: string) => void>()
 
 async function editUserSchedules(data: User): Promise<void> {
+    const data_users = await supabase.from("profiles").select("*").order('id', { ascending: true })
+    users.value = data_users.data
+    selectedSchedules.value = users.value?.find(item => item.id === data.id)?.schedules || null
     visibleSchedules.value = true
-    selectedSchedules.value = data.schedules
     let response = await new Promise(resolve => {
         resolvePromise.value = resolve
     })
@@ -92,8 +96,10 @@ async function editUserSchedules(data: User): Promise<void> {
     }
 }
 async function editUserInstructions(data: User): Promise<void> {
+    const data_users = await supabase.from("profiles").select("*").order('id', { ascending: true })
+    users.value = data_users.data
+    selectedInstructions.value = users.value?.find(item => item.id === data.id)?.instructions || null
     visibleInstructions.value = true
-    selectedInstructions.value = data.instructions
     let response = await new Promise(resolve => {
         resolvePromise.value = resolve
     })
@@ -110,7 +116,7 @@ async function updateUserActive(data: User, index: number): Promise<void> {
     }
 }
 onBeforeMount(async() => {
-    const data_users = await supabase.from("profiles").select("*")
+    const data_users = await supabase.from("profiles").select("*").order('id', { ascending: true })
     users.value = data_users.data
     const data_schedules = await supabase.from("schedules").select("*")
     schedules.value = data_schedules.data
