@@ -1,3 +1,6 @@
+.p-inputtext {
+    width: 100%;
+}
 .wrapper-table {
     display: flex;
     flex-flow: column nowrap;
@@ -18,9 +21,6 @@
     display: flex;
     margin-left: auto;
     order: 1;
-}
-.p-inputtext {
-    width: 100%;
 }
 .wrapper-radio{
     display: flex;

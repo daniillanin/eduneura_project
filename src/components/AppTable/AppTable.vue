@@ -212,5 +212,5 @@ watch(() => props.tableID, async (tableID_actual) => {
 </script>
 
 <style scoped lang="scss">
-@use "./AppTable.scss"
+@use "./AppTable.scss";
 </style>

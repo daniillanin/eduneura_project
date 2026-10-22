@@ -29,7 +29,19 @@
             <Button label="Сохранить" severity="primary" @click="resolvePromise?.('Сохранить')"></Button>
         </template>
     </Dialog>
-    <DataTable :value="users" tableStyle="min-width: 50rem" stripedRows removableSort scrollable>
+    <DataTable v-model:filters="filters" :globalFilterFields="['id', 'first_name', 'last_name', 'role']" :value="users" tableStyle="min-width: 50rem" stripedRows removableSort scrollable>
+        <template #header>
+            <div>
+                <IconField iconPosition="left">
+                    <InputIcon>
+                        <i class="pi pi-search"></i>
+                    </InputIcon>
+                    <InputText v-model="filters['global'].value" placeholder="Фамилия, имя" />
+                </IconField>
+            </div>
+        </template>
+        <template #empty> Ничего не найдено </template>
+        <template #loading> Загрузка... </template>
         <Column field="last_name" header="Фамилия" sortable></Column>
         <Column field="first_name" header="Имя" sortable></Column>
         <Column field="role" header="Роль" sortable>
@@ -67,7 +79,8 @@ import { ref, onBeforeMount, nextTick } from 'vue'
 import { useMainStore } from '@/stores/mainStore'
 import { supabase } from '@/database/supabase'
 import type { User, Schedule, Instruction } from '@/types/interfaces'
-import { DataTable, Column, ToggleSwitch, Button, Dialog, Checkbox } from 'primevue'
+import { DataTable, Column, ToggleSwitch, Button, Dialog, Checkbox, IconField, InputText, InputIcon } from 'primevue'
+import { FilterMatchMode } from '@primevue/core/api'
 
 const store = useMainStore()
 
@@ -79,6 +92,7 @@ const instructions = ref<Instruction[] | null>(null)
 const selectedSchedules = ref<string[] | null>(null)
 const selectedInstructions = ref<string[] | null>(null)
 const resolvePromise = ref<(value: string) => void>()
+const filters = ref({global: { value: null, matchMode: FilterMatchMode.CONTAINS }})
 
 async function editUserSchedules(data: User): Promise<void> {
     const data_users = await supabase.from("profiles").select("*").order('id', { ascending: true })
@@ -128,6 +142,10 @@ onBeforeMount(async() => {
 <style lang="scss">
 .p-datatable {
     margin-top: 100px;
+}
+.p-datatable-header {
+    display: flex;
+    justify-content: flex-end;
 }
 .wrapper-dialog-schedules{
     display: flex;
